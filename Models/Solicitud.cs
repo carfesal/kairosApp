@@ -10,6 +10,7 @@ namespace kairosApp.Models
         public int Id { get; set; }
         public string Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public Dictionary<string, object> InfoSolicitud { get; set; }
         public int PersonaId { get; set; }
         public Persona Persona { get; set; }
     }

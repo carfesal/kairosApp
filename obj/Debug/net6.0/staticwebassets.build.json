@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "DUkhondOsIeWg1cWO6FAd7qXrB7FL7DpCTRYYMYV0uk=",
+  "Source": "kairosApp",
+  "BasePath": "_content/kairosApp",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

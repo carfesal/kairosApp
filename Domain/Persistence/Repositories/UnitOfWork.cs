@@ -18,4 +18,4 @@ namespace kairosApp.Domain.Persistence.Repositories
         }
     }
 }
-}
+

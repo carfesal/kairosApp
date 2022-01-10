@@ -1,5 +1,6 @@
 ﻿using kairosApp.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace kairosApp.Domain.Persistence.Contexts
 {
@@ -9,9 +10,12 @@ namespace kairosApp.Domain.Persistence.Contexts
         public DbSet<CuentaUsuario> CuentaUsuarios { get; set; }
         public DbSet<Grupo> Grupos { get; set; }
         public DbSet<Solicitud> Solicitudes { get; set; }
+        public DbSet<UsuarioGrupo> UsuarioGrupos { get; set; }
+
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -44,15 +48,24 @@ namespace kairosApp.Domain.Persistence.Contexts
             builder.Entity<Grupo>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<Grupo>().Property(p => p.Nombre).IsRequired().HasMaxLength(20);
             builder.Entity<Grupo>().HasMany(p => p.UsuarioGrupos).WithOne(p => p.Grupo).HasForeignKey(p => p.GrupoId);
-            
+
             //SOLICITUD
             builder.Entity<Solicitud>().HasKey(p => p.Id);
             builder.Entity<Solicitud>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<Solicitud>().Property(p => p.Estado).IsRequired().HasMaxLength(20);
             builder.Entity<Solicitud>().Property(p => p.FechaCreacion).IsRequired();
+            builder.Entity<Solicitud>().Property(p => p.InfoSolicitud).IsRequired()
+                .HasConversion(
+                v => JsonConvert.SerializeObject(v),
+                v => JsonConvert.DeserializeObject<Dictionary<string, object>>(v));
+            
+            //UsuarioGrupo
+            builder.Entity<UsuarioGrupo>().HasKey(p => p.Id);
+            builder.Entity<UsuarioGrupo>().HasOne(p => p.CuentaUsuario).WithMany(p => p.UsuarioGrupo).HasForeignKey(p => p.CuentaUsuarioId);
+            builder.Entity<UsuarioGrupo>().HasOne(p => p.Grupo).WithMany(p => p.UsuarioGrupos).HasForeignKey(p => p.CuentaUsuarioId);
 
 
         }
     }
 }
-}
+

@@ -16,10 +16,12 @@ namespace kairosApp.Controllers
     {
         private readonly IPersonaService _personaService;
         private readonly IMapper _mapper;
-        public PersonaController(IPersonaService personaService, IMapper mapper)
+        private readonly IActiveDirectoryService _activeDirectoryService;
+        public PersonaController(IPersonaService personaService, IMapper mapper, IActiveDirectoryService activeDirectoryService)
         {
             _personaService = personaService;
             _mapper = mapper;
+            _activeDirectoryService = activeDirectoryService;
         }
 
         [HttpGet]
@@ -63,5 +65,23 @@ namespace kairosApp.Controllers
             var personaResource = _mapper.Map<Persona, PersonaResource>(result.Persona);
             return Ok(personaResource);
         }
+
+        [HttpGet]
+        [Route("{identificacion}/{fecha}/{tipo}")]
+        public async Task<IActionResult> GetPerson(string identificacion, string fecha, string tipo) 
+        {
+            //ACCION A LA OTRA BASE DE DATOS 
+            return Ok(_activeDirectoryService.GetCurrentDomainPath());
+        }
+
+        [HttpGet]
+        [Route("cuenta/{identificacion}/{fecha}/{tipo}")]
+        public async Task<IActionResult> GetPersonWithAccount(string identificacion, string fecha, string tipo)
+        {
+            //ACCION A LA OTRA BASE DE DATOS p ACTIVE DIRECTORY
+            return Ok("Se debe retornar info de la persona.");
+        }
     }
+
+    
 }
