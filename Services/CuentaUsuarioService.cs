@@ -44,8 +44,9 @@ namespace kairosApp.Services
             if (existingCuenta == null)
                 return new SaveCuentaUsuarioResponse("Cuenta no Encontrada.");
 
-            existingCuenta.Alias = cuentaUsuario.Alias;
-            existingCuenta.Username = cuentaUsuario.Username;
+            /*existingCuenta.Alias = cuentaUsuario.Alias;
+            existingCuenta.Username = cuentaUsuario.Username;*/
+            existingCuenta.IsActive = cuentaUsuario.IsActive;
 
             try
             {

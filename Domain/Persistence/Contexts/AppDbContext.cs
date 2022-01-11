@@ -43,13 +43,14 @@ namespace kairosApp.Domain.Persistence.Contexts
             builder.Entity<CuentaUsuario>().HasKey(p => p.Id);
             builder.Entity<CuentaUsuario>().Property(p => p.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Entity<CuentaUsuario>().Property(p => p.Username).IsRequired().HasMaxLength(10);
+            builder.Entity<CuentaUsuario>().Property(p => p.IsActive).IsRequired();
             builder.Entity<CuentaUsuario>().Property(p => p.Alias).IsRequired().HasMaxLength(20);
             builder.Entity<CuentaUsuario>().HasMany(p => p.UsuarioGrupo).WithOne(p => p.CuentaUsuario).HasForeignKey(p => p.CuentaUsuarioId);
             builder.Entity<CuentaUsuario>().HasData
             (
-                new CuentaUsuario { Id = 101, Username = "carfesal", Alias = "carlos.salazar", PersonaId = 100},
-                new CuentaUsuario { Id = 102, Username = "meldaban", Alias = "melanie.banchon", PersonaId = 101},
-                new CuentaUsuario { Id = 103, Username = "melroxan", Alias = "melissa.pachar", PersonaId = 102}
+                new CuentaUsuario { Id = 101, Username = "carfesal", Alias = "carlos.salazar", PersonaId = 100, IsActive = true},
+                new CuentaUsuario { Id = 102, Username = "meldaban", Alias = "melanie.banchon", PersonaId = 101, IsActive = true },
+                new CuentaUsuario { Id = 103, Username = "melroxan", Alias = "melissa.pachar", PersonaId = 102, IsActive = true }
                 );
             //GRUPO
             builder.Entity<Grupo>().HasKey(p => p.Id);
@@ -79,13 +80,22 @@ namespace kairosApp.Domain.Persistence.Contexts
 
             builder.Entity<Solicitud>().HasData
             (
-                new Solicitud { Id = 101, Estado = "No Revisado", FechaCreacion = DateTime.Now, InfoSolicitud = JsonConvert.SerializeObject(new InfoSolicitud { nombres="Fernando Carlos", apellidos="Moreira Salazar",identificacion="0912654798", actividad="Estudiante", correo="fernandomoreira@gmail.com", telefono="0997063143", unidad="FIEC", alias_sugerido="fernando.moreira", usuario_sugerido="fermorsa"})}
+                new Solicitud { Id = 101, Estado = "No Revisado", FechaCreacion = DateTime.Now, InfoSolicitud = JsonConvert.SerializeObject(new InfoSolicitud { nombres="Fernando Carlos", apellidos="Moreira Salazar",identificacion="0912654798", actividad="Estudiante", correo="fernandomoreira@gmail.com", telefono="0997063143", unidad="FIEC", alias_sugerido="fernando.moreira", usuario_sugerido="fermorsa"})},
+                new Solicitud { Id = 102, Estado = "No Revisado", FechaCreacion = DateTime.Now, InfoSolicitud = JsonConvert.SerializeObject(new InfoSolicitud { nombres="Rosa Cristina", apellidos="Alvarado Castillo",identificacion="0914365487", actividad="Estudiante", correo="rosita_alvarado@gmail.com", telefono="0991193877", unidad="FIMCP", alias_sugerido="rosa.cristina", usuario_sugerido="rosaalva"})}
                 );
             //UsuarioGrupo
             builder.Entity<UsuarioGrupo>().HasKey(p => p.Id);
             builder.Entity<UsuarioGrupo>().HasOne(p => p.CuentaUsuario).WithMany(p => p.UsuarioGrupo).HasForeignKey(p => p.CuentaUsuarioId);
             builder.Entity<UsuarioGrupo>().HasOne(p => p.Grupo).WithMany(p => p.UsuarioGrupos).HasForeignKey(p => p.GrupoId);
-            
+            builder.Entity<UsuarioGrupo>().HasData
+                (
+                new UsuarioGrupo { Id = 100, CuentaUsuarioId = 101, GrupoId = 101},
+                new UsuarioGrupo { Id = 101, CuentaUsuarioId = 102, GrupoId = 103},
+                new UsuarioGrupo { Id = 102, CuentaUsuarioId = 102, GrupoId = 104},
+                new UsuarioGrupo { Id = 103, CuentaUsuarioId = 103, GrupoId = 101},
+                new UsuarioGrupo { Id = 104, CuentaUsuarioId = 103, GrupoId = 110},
+                new UsuarioGrupo { Id = 105, CuentaUsuarioId = 102, GrupoId = 109}
+                );
             //Solicitud Persona
             builder.Entity<SolicitudPersona>().HasKey(p => p.Id);
             builder.Entity<SolicitudPersona>().HasOne(p => p.Persona).WithMany(p => p.SolicitudPersonas).HasForeignKey(p => p.PersonaId);

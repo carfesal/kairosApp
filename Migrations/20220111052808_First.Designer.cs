@@ -11,7 +11,7 @@ using kairosApp.Domain.Persistence.Contexts;
 namespace kairosApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220110072555_First")]
+    [Migration("20220111052808_First")]
     partial class First
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,6 +29,9 @@ namespace kairosApp.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PersonaId")
                         .HasColumnType("INTEGER");
@@ -50,6 +53,7 @@ namespace kairosApp.Migrations
                         {
                             Id = 101,
                             Alias = "carlos.salazar",
+                            IsActive = true,
                             PersonaId = 100,
                             Username = "carfesal"
                         },
@@ -57,6 +61,7 @@ namespace kairosApp.Migrations
                         {
                             Id = 102,
                             Alias = "melanie.banchon",
+                            IsActive = true,
                             PersonaId = 101,
                             Username = "meldaban"
                         },
@@ -64,6 +69,7 @@ namespace kairosApp.Migrations
                         {
                             Id = 103,
                             Alias = "melissa.pachar",
+                            IsActive = true,
                             PersonaId = 102,
                             Username = "melroxan"
                         });
@@ -245,8 +251,15 @@ namespace kairosApp.Migrations
                         {
                             Id = 101,
                             Estado = "No Revisado",
-                            FechaCreacion = new DateTime(2022, 1, 10, 2, 25, 55, 823, DateTimeKind.Local).AddTicks(749),
+                            FechaCreacion = new DateTime(2022, 1, 11, 0, 28, 8, 804, DateTimeKind.Local).AddTicks(5660),
                             InfoSolicitud = "{\"nombres\":\"Fernando Carlos\",\"apellidos\":\"Moreira Salazar\",\"identificacion\":\"0912654798\",\"actividad\":\"Estudiante\",\"unidad\":\"FIEC\",\"telefono\":\"0997063143\",\"correo\":\"fernandomoreira@gmail.com\",\"alias_sugerido\":\"fernando.moreira\",\"usuario_sugerido\":\"fermorsa\"}"
+                        },
+                        new
+                        {
+                            Id = 102,
+                            Estado = "No Revisado",
+                            FechaCreacion = new DateTime(2022, 1, 11, 0, 28, 8, 804, DateTimeKind.Local).AddTicks(5823),
+                            InfoSolicitud = "{\"nombres\":\"Rosa Cristina\",\"apellidos\":\"Alvarado Castillo\",\"identificacion\":\"0914365487\",\"actividad\":\"Estudiante\",\"unidad\":\"FIMCP\",\"telefono\":\"0991193877\",\"correo\":\"rosita_alvarado@gmail.com\",\"alias_sugerido\":\"rosa.cristina\",\"usuario_sugerido\":\"rosaalva\"}"
                         });
                 });
 
@@ -291,6 +304,44 @@ namespace kairosApp.Migrations
                     b.HasIndex("GrupoId");
 
                     b.ToTable("UsuarioGrupos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 100,
+                            CuentaUsuarioId = 101,
+                            GrupoId = 101
+                        },
+                        new
+                        {
+                            Id = 101,
+                            CuentaUsuarioId = 102,
+                            GrupoId = 103
+                        },
+                        new
+                        {
+                            Id = 102,
+                            CuentaUsuarioId = 102,
+                            GrupoId = 104
+                        },
+                        new
+                        {
+                            Id = 103,
+                            CuentaUsuarioId = 103,
+                            GrupoId = 101
+                        },
+                        new
+                        {
+                            Id = 104,
+                            CuentaUsuarioId = 103,
+                            GrupoId = 110
+                        },
+                        new
+                        {
+                            Id = 105,
+                            CuentaUsuarioId = 102,
+                            GrupoId = 109
+                        });
                 });
 
             modelBuilder.Entity("kairosApp.Models.CuentaUsuario", b =>

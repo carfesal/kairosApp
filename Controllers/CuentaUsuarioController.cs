@@ -50,8 +50,8 @@ namespace kairosApp.Controllers
                 Debug.WriteLine(account.Username+" "+account.PersonaId);
             }
             var rsc = _mapper.Map<IEnumerable<CuentaUsuario>, IEnumerable<CuentaUsuarioResource>>(accounts);
-
-            return rsc;
+            var retornable = rsc.Where(p => p.IsActive == true);
+            return retornable;
         }
 
         [HttpPost]

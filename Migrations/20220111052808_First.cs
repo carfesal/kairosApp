@@ -64,6 +64,7 @@ namespace kairosApp.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Alias = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     PersonaId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -197,22 +198,57 @@ namespace kairosApp.Migrations
             migrationBuilder.InsertData(
                 table: "Solicitudes",
                 columns: new[] { "Id", "Estado", "FechaCreacion", "InfoSolicitud" },
-                values: new object[] { 101, "No Revisado", new DateTime(2022, 1, 10, 2, 25, 55, 823, DateTimeKind.Local).AddTicks(749), "{\"nombres\":\"Fernando Carlos\",\"apellidos\":\"Moreira Salazar\",\"identificacion\":\"0912654798\",\"actividad\":\"Estudiante\",\"unidad\":\"FIEC\",\"telefono\":\"0997063143\",\"correo\":\"fernandomoreira@gmail.com\",\"alias_sugerido\":\"fernando.moreira\",\"usuario_sugerido\":\"fermorsa\"}" });
+                values: new object[] { 101, "No Revisado", new DateTime(2022, 1, 11, 0, 28, 8, 804, DateTimeKind.Local).AddTicks(5660), "{\"nombres\":\"Fernando Carlos\",\"apellidos\":\"Moreira Salazar\",\"identificacion\":\"0912654798\",\"actividad\":\"Estudiante\",\"unidad\":\"FIEC\",\"telefono\":\"0997063143\",\"correo\":\"fernandomoreira@gmail.com\",\"alias_sugerido\":\"fernando.moreira\",\"usuario_sugerido\":\"fermorsa\"}" });
+
+            migrationBuilder.InsertData(
+                table: "Solicitudes",
+                columns: new[] { "Id", "Estado", "FechaCreacion", "InfoSolicitud" },
+                values: new object[] { 102, "No Revisado", new DateTime(2022, 1, 11, 0, 28, 8, 804, DateTimeKind.Local).AddTicks(5823), "{\"nombres\":\"Rosa Cristina\",\"apellidos\":\"Alvarado Castillo\",\"identificacion\":\"0914365487\",\"actividad\":\"Estudiante\",\"unidad\":\"FIMCP\",\"telefono\":\"0991193877\",\"correo\":\"rosita_alvarado@gmail.com\",\"alias_sugerido\":\"rosa.cristina\",\"usuario_sugerido\":\"rosaalva\"}" });
 
             migrationBuilder.InsertData(
                 table: "CuentaUsuarios",
-                columns: new[] { "Id", "Alias", "PersonaId", "Username" },
-                values: new object[] { 101, "carlos.salazar", 100, "carfesal" });
+                columns: new[] { "Id", "Alias", "IsActive", "PersonaId", "Username" },
+                values: new object[] { 101, "carlos.salazar", true, 100, "carfesal" });
 
             migrationBuilder.InsertData(
                 table: "CuentaUsuarios",
-                columns: new[] { "Id", "Alias", "PersonaId", "Username" },
-                values: new object[] { 102, "melanie.banchon", 101, "meldaban" });
+                columns: new[] { "Id", "Alias", "IsActive", "PersonaId", "Username" },
+                values: new object[] { 102, "melanie.banchon", true, 101, "meldaban" });
 
             migrationBuilder.InsertData(
                 table: "CuentaUsuarios",
-                columns: new[] { "Id", "Alias", "PersonaId", "Username" },
-                values: new object[] { 103, "melissa.pachar", 102, "melroxan" });
+                columns: new[] { "Id", "Alias", "IsActive", "PersonaId", "Username" },
+                values: new object[] { 103, "melissa.pachar", true, 102, "melroxan" });
+
+            migrationBuilder.InsertData(
+                table: "UsuarioGrupos",
+                columns: new[] { "Id", "CuentaUsuarioId", "GrupoId" },
+                values: new object[] { 100, 101, 101 });
+
+            migrationBuilder.InsertData(
+                table: "UsuarioGrupos",
+                columns: new[] { "Id", "CuentaUsuarioId", "GrupoId" },
+                values: new object[] { 101, 102, 103 });
+
+            migrationBuilder.InsertData(
+                table: "UsuarioGrupos",
+                columns: new[] { "Id", "CuentaUsuarioId", "GrupoId" },
+                values: new object[] { 102, 102, 104 });
+
+            migrationBuilder.InsertData(
+                table: "UsuarioGrupos",
+                columns: new[] { "Id", "CuentaUsuarioId", "GrupoId" },
+                values: new object[] { 103, 103, 101 });
+
+            migrationBuilder.InsertData(
+                table: "UsuarioGrupos",
+                columns: new[] { "Id", "CuentaUsuarioId", "GrupoId" },
+                values: new object[] { 104, 103, 110 });
+
+            migrationBuilder.InsertData(
+                table: "UsuarioGrupos",
+                columns: new[] { "Id", "CuentaUsuarioId", "GrupoId" },
+                values: new object[] { 105, 102, 109 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CuentaUsuarios_PersonaId",

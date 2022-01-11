@@ -9,6 +9,7 @@ namespace kairosApp.Resources
         public string Username { get; set; }
         [Required]
         public string Alias { get; set; }
+        public bool IsActive { get; set; }
         
     }
 }
