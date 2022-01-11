@@ -18,7 +18,7 @@ namespace kairosApp.Models
         public string CorreoAlterno { get; set; }
         public string Rol { get; set; }
         public CuentaUsuario CuentaUsuario;
-        public IList<SolicitudPersona> SolicitudPersonas { get; set; } = new List<SolicitudPersona>();
+        public IList<SolicitudPersona> SolicitudPersonas  { get; set; } = new List<SolicitudPersona>();
 
 
     }

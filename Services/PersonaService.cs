@@ -97,8 +97,9 @@ namespace kairosApp.Services
 
             existingPersona.Nombres = persona.Nombres;
             existingPersona.Apellidos = persona.Apellidos;
-            /*existingPersona.Telefono = persona.Telefono;
-            existingPersona.Identificacion = persona.Identificacion;
+            existingPersona.Telefono = persona.Telefono;
+            existingPersona.CorreoAlterno = persona.CorreoAlterno;
+            /*existingPersona.Identificacion = persona.Identificacion;
             existingPersona.Rol = persona.Rol;*/
 
             try
