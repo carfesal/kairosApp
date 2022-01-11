@@ -25,7 +25,11 @@ namespace kairosApp.Controllers
         {
             var solicitudes = await _solicitudService.ListAsync();
             var rsc = _mapper.Map<IEnumerable<Solicitud>, IEnumerable<SolicitudResource>>(solicitudes);
+            /*var lista_solicitudes = new List<SolicitudInfoResource>();
+            foreach (var solicitud in rsc)
+            {
 
+            }*/
             return rsc;
         }
 
@@ -40,7 +44,7 @@ namespace kairosApp.Controllers
             var result = await _solicitudService.SaveAsync(solicitud);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+                return BadRequest(new ErrorResource { ErrorMessage = result.Message});
 
             var solicitudResource = _mapper.Map<Solicitud, SolicitudResource>(result.Solicitud);
             return Ok(solicitudResource);
@@ -56,7 +60,7 @@ namespace kairosApp.Controllers
             var result = await _solicitudService.UpdateAsync(id, solicitud);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+                return BadRequest(new ErrorResource { ErrorMessage = result.Message });
 
             var solicitudResource = _mapper.Map<Solicitud, SolicitudResource>(result.Solicitud);
             return Ok(solicitudResource);
