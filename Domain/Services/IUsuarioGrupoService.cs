@@ -8,5 +8,7 @@ namespace kairosApp.Domain.Services
         Task<IEnumerable<UsuarioGrupo>> ListAsync();
         Task<SaveUsuarioGrupoResponse> SaveAsync(UsuarioGrupo usuarioGrupo);
         Task<SaveUsuarioGrupoResponse> UpdateAsync(int id, UsuarioGrupo usuarioGrupo);
+
+        bool UpdateUsuarioGrupos(int usuarioId, List<int> gruposIds);
     }
 }

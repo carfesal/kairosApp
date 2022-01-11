@@ -5,6 +5,7 @@ using kairosApp.Models;
 using kairosApp.Resources;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace kairosApp.Controllers
 {
@@ -61,5 +62,24 @@ namespace kairosApp.Controllers
             var solicitudResource = _mapper.Map<UsuarioGrupo, UsuarioGrupoResource>(result.UsuarioGrupo);
             return Ok(solicitudResource);
         }
+        [HttpPut]
+        [Route("editar")]
+        public async Task<IActionResult> UpdateGruposToUser([FromBody]UsurioListaGrupos grupos)
+        {
+            var proceso = _usuarioGrupoService.UpdateUsuarioGrupos(grupos.CuentaUsuarioId, grupos.GruposIds);
+            if (proceso)
+            {
+                return Ok("Operacion exitosa");
+            }
+            return BadRequest(new ErrorResource { ErrorMessage = "Ocurrio un problema al quitar los grupos" });
+        }
+    }
+
+    public class UsurioListaGrupos
+    {
+        [Required]
+        public int CuentaUsuarioId { get; set; }
+        [Required]
+        public List<int> GruposIds     { get; set; }
     }
 }

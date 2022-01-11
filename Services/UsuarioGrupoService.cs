@@ -1,7 +1,9 @@
-﻿using kairosApp.Domain.Repositories;
+﻿using kairosApp.Domain.Persistence.Contexts;
+using kairosApp.Domain.Repositories;
 using kairosApp.Domain.Services;
 using kairosApp.Domain.Services.Communication;
 using kairosApp.Models;
+using System.Diagnostics;
 
 namespace kairosApp.Services
 {
@@ -9,11 +11,12 @@ namespace kairosApp.Services
     {
         private readonly IUsuarioGrupoRepository _usuarioGrupoRepository;
         private readonly IUnitOfWork _unitOfWork;
-
-        public UsuarioGrupoService(IUsuarioGrupoRepository usuarioGrupoRepository, IUnitOfWork unitOfWork)
+        private readonly AppDbContext _context;
+        public UsuarioGrupoService(IUsuarioGrupoRepository usuarioGrupoRepository, IUnitOfWork unitOfWork, AppDbContext context)
         {
             _usuarioGrupoRepository = usuarioGrupoRepository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<IEnumerable<UsuarioGrupo>> ListAsync()
@@ -60,5 +63,58 @@ namespace kairosApp.Services
                 return new SaveUsuarioGrupoResponse($"Un error ocurrio mientras se actualizaba a la persona: {ex.Message}");
             }
         }
+
+        public bool UpdateUsuarioGrupos(int usuarioId, List<int> gruposIds)
+        {
+            try 
+            {
+                var gruposAEliminar = _context.UsuarioGrupos.Where(p => p.CuentaUsuarioId == usuarioId).ToList();
+                if (gruposIds.Any())
+                {
+                    //Primero Elimino los grupos que no esten
+                    foreach (var grupo in gruposAEliminar)
+                    {
+
+                        if (!gruposIds.Contains(grupo.Id))
+                        {
+                            Debug.WriteLine("Elimino el grupo con el grupoId:" + grupo.GrupoId);
+                            _context.UsuarioGrupos.Remove(grupo);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Quito de la lista de Ids a el grupoId:" + grupo.GrupoId);
+                            gruposIds.RemoveAll(item => item == grupo.GrupoId);
+                        }
+                    }
+                    //Luego añado los grupos que falten
+                    foreach (var id in gruposIds)
+                    {
+                        var userGrupo = new UsuarioGrupo { GrupoId = id, CuentaUsuarioId = usuarioId };
+                        _context.UsuarioGrupos.Add(userGrupo);
+                        Debug.WriteLine("Añado al grupo Id:" + id);
+                    }
+
+                    _context.SaveChanges();
+                    return true;
+                }
+                else
+                {
+                    foreach(var grupo in gruposAEliminar)
+                    {
+                        _context.UsuarioGrupos.Remove(grupo);
+                    }
+                    _context.SaveChanges();
+                    return true;
+                }
+                
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+            
+        }
+
+        
     }
 }
