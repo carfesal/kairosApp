@@ -10,5 +10,6 @@ namespace kairosApp.Domain.Repositories
         Task AddAsync(Persona persona);
         Task<Persona> FindByIdAsync(int id);
         void Update(Persona persona);
+        Task<Persona> FindByCedula(string cedula);
     }
 }

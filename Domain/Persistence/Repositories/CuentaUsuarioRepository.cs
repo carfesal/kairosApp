@@ -18,7 +18,7 @@ namespace kairosApp.Domain.Persistence.Repositories
 
         public async Task<IEnumerable<CuentaUsuario>> ListAsync()
         {
-            return await _context.CuentaUsuarios.ToListAsync();
+            return await _context.CuentaUsuarios.Include(p => p.Persona).Include(p => p.UsuarioGrupo).ThenInclude(p => p.Grupo).ToListAsync();
         }
 
         public async Task<CuentaUsuario> FindByIdAsync(int id)

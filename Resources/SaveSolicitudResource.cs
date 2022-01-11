@@ -8,5 +8,6 @@ namespace kairosApp.Resources
         [Required]
         public string Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public string InfoSolicitud { get; set; }
     }
 }

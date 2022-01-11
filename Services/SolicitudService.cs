@@ -1,7 +1,9 @@
-﻿using kairosApp.Domain.Repositories;
+﻿using kairosApp.Domain.Persistence.Contexts;
+using kairosApp.Domain.Repositories;
 using kairosApp.Domain.Services;
 using kairosApp.Domain.Services.Communication;
 using kairosApp.Models;
+using Newtonsoft.Json;
 
 namespace kairosApp.Services
 {
@@ -9,11 +11,12 @@ namespace kairosApp.Services
     {
         private readonly ISolicitudRepository _solicitudRepository;
         private readonly IUnitOfWork _unitOfWork;
-
-        public SolicitudService(ISolicitudRepository solicitudRepository, IUnitOfWork unitOfWork)
+        private readonly AppDbContext _context;
+        public SolicitudService(ISolicitudRepository solicitudRepository, IUnitOfWork unitOfWork, AppDbContext context)
         {
             _solicitudRepository = solicitudRepository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<IEnumerable<Solicitud>> ListAsync()
@@ -45,7 +48,21 @@ namespace kairosApp.Services
                 return new SaveSolicitudResponse("solicitud no Encontrada.");
 
             existingSolicitud.Estado = solicitud.Estado;
+            if(solicitud.Estado == "Aceptado")
+            {
+                var info = JsonConvert.DeserializeObject<InfoSolicitud>(existingSolicitud.InfoSolicitud);
+                var username = info.usuario_sugerido;
+                var alias = info.alias_sugerido;
 
+                var usernameBuscado = _context.CuentaUsuarios.Where(p => p.Username == username).ToList();
+                var aliasBuscado = _context.CuentaUsuarios.Where(p =>p.Alias == alias).ToList();
+
+                if(usernameBuscado.Any() || aliasBuscado.Any())
+                {
+                    return new SaveSolicitudResponse("Nombres de usuario y alias ya existentes.");
+                }
+
+            }
 
             try
             {

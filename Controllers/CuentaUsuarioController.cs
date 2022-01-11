@@ -8,6 +8,7 @@ using kairosApp.Domain.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using kairosApp.Helpers;
+using System.Diagnostics;
 
 namespace kairosApp.Controllers
 {
@@ -44,6 +45,10 @@ namespace kairosApp.Controllers
         public async Task<IEnumerable<CuentaUsuarioResource>> GetAllAsync()
         {
             var accounts = await _cuentaUsuarioService.ListAsync();
+            foreach (var account in accounts)
+            {
+                Debug.WriteLine(account.Username+" "+account.PersonaId);
+            }
             var rsc = _mapper.Map<IEnumerable<CuentaUsuario>, IEnumerable<CuentaUsuarioResource>>(accounts);
 
             return rsc;

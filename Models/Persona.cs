@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace kairosApp.Models
 {
-    [Table("personas")]
+    
     public class Persona
     {
         public int Id { get; set; }
@@ -18,7 +18,7 @@ namespace kairosApp.Models
         public string CorreoAlterno { get; set; }
         public string Rol { get; set; }
         public CuentaUsuario CuentaUsuario;
-        public IList<Solicitud> Solicitudes { get; set; } = new List<Solicitud>();
+        public IList<SolicitudPersona> SolicitudPersonas { get; set; } = new List<SolicitudPersona>();
 
 
     }

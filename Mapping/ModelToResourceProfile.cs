@@ -12,6 +12,7 @@ namespace kairosApp.Mapping
             CreateMap<CuentaUsuario, CuentaUsuarioResource>();
             CreateMap<Grupo, GrupoResource>();
             CreateMap<Solicitud, SolicitudResource>();
+            CreateMap<UsuarioGrupo, UsuarioGrupoResource>();
         }
     }
 }

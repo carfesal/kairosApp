@@ -71,7 +71,9 @@ namespace kairosApp.Controllers
         public async Task<IActionResult> GetPerson(string identificacion, string fecha, string tipo) 
         {
             //ACCION A LA OTRA BASE DE DATOS 
-            return Ok(_activeDirectoryService.GetCurrentDomainPath());
+            var persona = _personaService.GetPersonaByCedula(identificacion);
+            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula"}); }
+            return Ok(persona);
         }
 
         [HttpGet]

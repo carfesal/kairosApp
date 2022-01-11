@@ -1,7 +1,9 @@
-﻿using kairosApp.Domain.Repositories;
+﻿using kairosApp.Domain.Persistence.Contexts;
+using kairosApp.Domain.Repositories;
 using kairosApp.Domain.Services;
 using kairosApp.Domain.Services.Communication;
 using kairosApp.Models;
+using kairosApp.Resources;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,13 +13,60 @@ namespace kairosApp.Services
     {
         private readonly IPersonaRepository _personaRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly AppDbContext _context;
 
-        public PersonaService(IPersonaRepository personaRepository, IUnitOfWork unitOfWork)
+        public PersonaService(IPersonaRepository personaRepository, IUnitOfWork unitOfWork, AppDbContext context)
         {
             _personaRepository = personaRepository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
+        public PersonaCuentaResource GetPersonaByCedula(string cedula)
+        {
+            try
+            {
+                var persona = _context.Personas.Where(p => p.Identificacion == cedula).Single();
+                var usuarios = GetUsers(persona.Nombres, persona.Apellidos);
+                var personaCuenta = new PersonaCuentaResource { Persona = persona, Usuarios = usuarios };
+                return personaCuenta;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        private IList<string> GetUsers(string nombres, string apellidos)
+        {
+            var contador = 0;
+            var users = new List<string>();
+            var nombresLista = nombres.Split(' ');
+            var apellidosLista = apellidos.Split(' ');
+            while(contador < 3)
+            {
+                foreach (var n in nombresLista)
+                {
+                    foreach (var a in apellidosLista)
+                    {
+                        var nombreUsuario = n.Substring(0, 4).ToLower() + a.Substring(0,4).ToLower();
+                        var usuarios = _context.CuentaUsuarios.Where(p => p.Username == nombreUsuario).ToList();
+                        if (!usuarios.Any())
+                        {
+                            users.Add(nombreUsuario);
+                            contador++;
+                            if(contador == 3)
+                            {
+                                return users;
+                            }
+                        }
+                    }
+                }
+                
+            }
+            return users;
+            
+        }
         public async Task<IEnumerable<Persona>> ListAsync()
         {
             return await _personaRepository.ListAsync();
@@ -48,9 +97,9 @@ namespace kairosApp.Services
 
             existingPersona.Nombres = persona.Nombres;
             existingPersona.Apellidos = persona.Apellidos;
-            existingPersona.Telefono = persona.Telefono;
+            /*existingPersona.Telefono = persona.Telefono;
             existingPersona.Identificacion = persona.Identificacion;
-            existingPersona.Rol = persona.Rol;
+            existingPersona.Rol = persona.Rol;*/
 
             try
             {
@@ -66,4 +115,6 @@ namespace kairosApp.Services
             }
         }
     }
+
+    
 }

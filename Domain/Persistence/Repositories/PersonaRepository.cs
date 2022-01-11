@@ -30,5 +30,18 @@ namespace kairosApp.Domain.Persistence.Repositories
         {
             _context.Personas.Update(persona);
         }
+
+        public async Task<Persona> FindByCedula(string cedula)
+        {
+            try
+            {
+                var persona = _context.Personas.Where(p => p.Identificacion == cedula).Single();
+                return persona;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }

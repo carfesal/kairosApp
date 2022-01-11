@@ -40,7 +40,7 @@ builder.Services.AddSwaggerGen(options => {
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlite(@"Data Source=C:\Users\Carlos Salazar\Descargas\Demo.db");
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
     
 });
 
