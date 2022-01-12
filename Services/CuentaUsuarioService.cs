@@ -2,6 +2,7 @@
 using kairosApp.Domain.Services;
 using kairosApp.Models;
 using kairosApp.Domain.Services.Communication;
+using kairosApp.Domain.Persistence.Contexts;
 
 namespace kairosApp.Services
 {
@@ -9,11 +10,12 @@ namespace kairosApp.Services
     {
         private readonly ICuentaUsuarioRepository _cuentaUsuarioRepository;
         private readonly IUnitOfWork _unitOfWork;
-
-        public CuentaUsuarioService(ICuentaUsuarioRepository cuentaUsuarioRepository, IUnitOfWork unitOfWork)
+        private readonly AppDbContext _context;
+        public CuentaUsuarioService(ICuentaUsuarioRepository cuentaUsuarioRepository, IUnitOfWork unitOfWork, AppDbContext context)
         {
             _cuentaUsuarioRepository = cuentaUsuarioRepository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<IEnumerable<CuentaUsuario>> ListAsync()
@@ -60,6 +62,12 @@ namespace kairosApp.Services
                 // Do some logging stuff
                 return new SaveCuentaUsuarioResponse($"Un error ocurrio mientras se actualizaba a la persona: {ex.Message}");
             }
+        }
+
+        public bool VerifyAlias(string alias)
+        {
+            var aliasExistente = _context.CuentaUsuarios.Where(p => p.Alias == alias).Any();
+            return aliasExistente;
         }
     }
 }

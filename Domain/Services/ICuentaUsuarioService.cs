@@ -8,5 +8,6 @@ namespace kairosApp.Domain.Services
         Task<IEnumerable<CuentaUsuario>> ListAsync();
         Task<SaveCuentaUsuarioResponse> SaveAsync(CuentaUsuario cuentaUsuario);
         Task<SaveCuentaUsuarioResponse> UpdateAsync(int id, CuentaUsuario cuentaUsuario);
+        bool VerifyAlias(string alias);
     }
 }

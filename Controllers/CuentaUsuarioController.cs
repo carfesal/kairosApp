@@ -10,6 +10,8 @@ using System.Net;
 using kairosApp.Helpers;
 using System.Diagnostics;
 using kairosApp.Resources.Support;
+using kairosApp.Models.Support;
+using kairosApp.Domain.Persistence.Contexts;
 
 namespace kairosApp.Controllers
 {
@@ -21,6 +23,7 @@ namespace kairosApp.Controllers
         private readonly IMapper _mapper;
         private readonly IActiveDirectoryService _activeDirectoryService;
         private readonly JwtSettings _jwtSettings;
+        private readonly AppDbContext _context;
 
         private IEnumerable<CuentaUsuario> logins = new List<CuentaUsuario>() {
             new CuentaUsuario() {
@@ -34,12 +37,13 @@ namespace kairosApp.Controllers
                         Username = "meldaban",
                 }
         };
-        public CuentaUsuarioController(ICuentaUsuarioService cuentaUsuarioService, IMapper mapper, IActiveDirectoryService activeDirectoryService, JwtSettings jwtSettings)
+        public CuentaUsuarioController(ICuentaUsuarioService cuentaUsuarioService, IMapper mapper, IActiveDirectoryService activeDirectoryService, JwtSettings jwtSettings, AppDbContext context)
         {
             _cuentaUsuarioService = cuentaUsuarioService;
             _mapper = mapper;
             _activeDirectoryService = activeDirectoryService;
             _jwtSettings = jwtSettings;
+            _context = context;
         }
 
         [HttpGet]
@@ -107,19 +111,24 @@ namespace kairosApp.Controllers
             try
             {
                 var Token = new UserTokens();
-                var Valid = logins.Any(x => x.Username.Equals(credentials.Username, StringComparison.OrdinalIgnoreCase));
+                var Valid = _context.CuentaUsuarios.Any(x => x.Username == credentials.Username);
                 if (Valid)
                 {
-                    var user = logins.FirstOrDefault(x => x.Username.Equals(credentials.Username, StringComparison.OrdinalIgnoreCase));
+                    var user = _context.CuentaUsuarios.FirstOrDefault(x => x.Username == credentials.Username);
+                    if (user == null) { return NotFound(new ErrorResource { ErrorMessage = "Usuario no encontrado" }); }
+
+                    var persona = _context.Personas.FirstOrDefault(x => x.Id == user.PersonaId);
+                    Debug.WriteLine(persona.Nombres);
                     Token = JwtHelpers.GenTokenkey(new UserTokens()
                     {
-                        UserName = user.Username,
+                        Username = user.Username,
                         Id = user.Id,
+                        Rol = persona.Rol,
                     }, _jwtSettings);
                 }
                 else
                 {
-                    return BadRequest("wrong username or password");
+                    return BadRequest(new ErrorResource { ErrorMessage = "Usuario y/o contraseña erroneos"});
                 }
                 return Ok(Token);
             }
@@ -156,14 +165,18 @@ namespace kairosApp.Controllers
             }
             return Ok("Contraseña cambiada exitosamente");
         }
+        [HttpGet]
+        [Route("verificaralias/{alias}")]
+        public async Task<IActionResult> verifyAlias(string alias)
+        {
+            var respuesta = _cuentaUsuarioService.VerifyAlias(alias);
+            if (respuesta)
+            {
+                return Ok(new ResponseResource { Success = respuesta, Message = "Alias ya existente"});
+            }
+            return Ok(new ResponseResource { Success = respuesta, Message = "Alias no existe en base" });
+        }
     }
-    public class UserCredentials
-    {
-        
-        public string Username { get; set; }
-        
-        public string Password { get; set; }
-        public string Correo { get; set; }
-    }
+    
 
 }
