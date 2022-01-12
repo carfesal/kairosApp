@@ -7,7 +7,7 @@
         public TimeSpan Validaty { get; set; }
         public string RefreshToken { get; set; }
         public int Id { get; set; }
-        public string Rol { get; set; }
+        public Persona Persona { get; set; }
         public DateTime ExpiredTime{ get; set; }
     }
 }

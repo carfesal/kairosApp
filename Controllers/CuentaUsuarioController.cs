@@ -123,7 +123,7 @@ namespace kairosApp.Controllers
                     {
                         Username = user.Username,
                         Id = user.Id,
-                        Rol = persona.Rol,
+                        Persona = persona,
                     }, _jwtSettings);
                 }
                 else

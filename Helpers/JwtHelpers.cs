@@ -37,8 +37,8 @@ namespace kairosApp.Helpers
                 UserToken.Token = new JwtSecurityTokenHandler().WriteToken(JWToken);
                 UserToken.Username = model.Username;
                 UserToken.Id = model.Id;
-                UserToken.Rol = model.Rol;
-                 return UserToken;
+                UserToken.Persona = model.Persona;
+                return UserToken;
             }
             catch (Exception)
             {
