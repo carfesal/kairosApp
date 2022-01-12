@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace kairosApp.Resources
+namespace kairosApp.Resources.Support
 {
-    public class SaveCuentaUsuarioResource
+    public class CrearCuentaResource
     {
         public int Id { get; set; }
         [Required]
@@ -12,7 +12,6 @@ namespace kairosApp.Resources
         public bool IsActive { get; set; }
         [Required]
         public int PersonaId { get; set; }
-        
-        
+        public string Password { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using kairosApp.Helpers;
 using System.Diagnostics;
+using kairosApp.Resources.Support;
 
 namespace kairosApp.Controllers
 {
@@ -55,12 +56,12 @@ namespace kairosApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromBody] SaveCuentaUsuarioResource resource)
+        public async Task<IActionResult> PostAsync([FromBody] CrearCuentaResource resource)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.GetErrorMessages());
-
-            var cuenta = _mapper.Map<SaveCuentaUsuarioResource, CuentaUsuario>(resource);
+            var cuentaRsc = new SaveCuentaUsuarioResource { Alias = resource.Alias, IsActive = true, Username = resource.Username, PersonaId=resource.PersonaId};
+            var cuenta = _mapper.Map<SaveCuentaUsuarioResource, CuentaUsuario>(cuentaRsc);
 
             var result = await _cuentaUsuarioService.SaveAsync(cuenta);
 
