@@ -72,7 +72,7 @@ namespace kairosApp.Controllers
         {
             //ACCION A LA OTRA BASE DE DATOS 
             var persona = _personaService.GetPersonaByCedula(identificacion);
-            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula"}); }
+            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula o ya tiene cuenta creada."}); }
             return Ok(persona);
         }
 

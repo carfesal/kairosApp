@@ -27,6 +27,11 @@ namespace kairosApp.Services
             try
             {
                 var persona = _context.Personas.Where(p => p.Identificacion == cedula).Single();
+                var cuenta = _context.CuentaUsuarios.Where(p => p.PersonaId == persona.Id).ToList();
+                if (cuenta.Any())
+                {
+                    return null;
+                }
                 var usuarios = GetUsers(persona.Nombres, persona.Apellidos);
                 var personaCuenta = new PersonaCuentaResource { Persona = persona, Usuarios = usuarios };
                 return personaCuenta;
