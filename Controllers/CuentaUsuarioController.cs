@@ -182,7 +182,7 @@ namespace kairosApp.Controllers
             try
             {
                 var newPassWord = _cuentaUsuarioService.CreateNewPassword();
-                var message = new Message(new string[] { "codemazetest@mailinator.com" }, "Cambio de contraseña", "La nueva contraseña para su cuenta es: " + newPassWord);
+                var message = new Message(new string[] { credentials.Correo }, "Cambio de contraseña", "La nueva contraseña para su cuenta es: " + newPassWord);
                 _emailSender.SendEmail(message);
                 return Ok(new ResponseResource { Success = true, Message = "Contraseña reseteada con exito."});
             }
@@ -203,6 +203,18 @@ namespace kairosApp.Controllers
                 return Ok(new ResponseResource { Success = respuesta, Message = "Alias ya existente"});
             }
             return Ok(new ResponseResource { Success = respuesta, Message = "Alias no existe en base" });
+        }
+
+        [HttpGet]
+        [Route("verificarusername/{username}")]
+        public async Task<IActionResult> verifyUsername(string username)
+        {
+            var respuesta = _cuentaUsuarioService.VerifyUsername(username);
+            if (respuesta)
+            {
+                return Ok(new ResponseResource { Success = respuesta, Message = "Username ya existente" });
+            }
+            return Ok(new ResponseResource { Success = respuesta, Message = "Username no existe en base" });
         }
     }
     

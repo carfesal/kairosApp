@@ -10,6 +10,7 @@ namespace kairosApp.Domain.Services
         Task<SaveCuentaUsuarioResponse> SaveAsync(CuentaUsuario cuentaUsuario);
         Task<SaveCuentaUsuarioResponse> UpdateAsync(int id, CuentaUsuario cuentaUsuario);
         bool VerifyAlias(string alias);
+        bool VerifyUsername(string username);
         bool VerifyEmail(UserCredentials credentials);
         string CreateNewPassword();
     }

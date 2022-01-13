@@ -110,5 +110,11 @@ namespace kairosApp.Services
             }
             return false;
         }
+
+        public bool VerifyUsername(string username)
+        {
+            var usernameExistente = _context.CuentaUsuarios.Where(p => p.Username == username).Any();
+            return usernameExistente;
+        }
     }
 }
