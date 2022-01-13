@@ -66,7 +66,7 @@ namespace kairosApp.Services
                 Persona persona = new Persona() { Nombres = info.nombres, Apellidos = info.apellidos, CorreoAlterno = info.correo, Identificacion = info.identificacion, Rol = info.actividad, Unidad = info.unidad, Telefono = info.telefono};
                 _context.Personas.Add(persona);
                 _context.SaveChanges();
-                CuentaUsuario cu = new CuentaUsuario() { Username = info.usuario_sugerido, Alias = info.alias_sugerido, PersonaId = persona.Id};
+                CuentaUsuario cu = new CuentaUsuario() { Username = info.usuario_sugerido, Alias = info.alias_sugerido, PersonaId = persona.Id, IsActive=true};
                 _context.CuentaUsuarios.Add(cu);
                 _context.SaveChanges();
 
