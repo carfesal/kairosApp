@@ -7,11 +7,20 @@ using Microsoft.Extensions.DependencyInjection;
 using kairosApp.Domain.Services;
 using kairosApp.Services;
 using kairosApp.Extensions;
+using kairosApp.Models.Support;
+using kairosApp.Models.Support.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddJWTTokenServices(builder.Configuration);
+//EMAIL CONFIGURATION
+var emailConfig = builder.Configuration
+        .GetSection("EmailConfiguration")
+        .Get<EmailConfiguration>();
+builder.Services.AddSingleton(emailConfig);
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+//
 builder.Services.AddControllers();
 builder.Services.AddCors();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

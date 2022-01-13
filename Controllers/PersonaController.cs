@@ -3,6 +3,7 @@ using kairosApp.Domain.Services;
 using kairosApp.Extensions;
 using kairosApp.Models;
 using kairosApp.Resources;
+using kairosApp.Resources.Support;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -72,8 +73,9 @@ namespace kairosApp.Controllers
         {
             //ACCION A LA OTRA BASE DE DATOS 
             var persona = _personaService.GetPersonaByCedula(identificacion);
-            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula o ya tiene cuenta creada."}); }
-            return Ok(persona);
+            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula."}); }
+            if( persona.Persona == null) { return Ok(new ResponsePersona { Success = false, Persona = null}); }
+            return Ok(new ResponsePersona { Success = true, Persona = persona });
         }
 
         [HttpGet]

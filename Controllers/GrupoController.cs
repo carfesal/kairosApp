@@ -45,7 +45,7 @@ namespace kairosApp.Controllers
             var grupoResource = _mapper.Map<Grupo, GrupoResource>(result.Grupo);
             return Ok(grupoResource);
         }
-
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAsync(int id, [FromBody] SaveGrupoResource resource)
         {

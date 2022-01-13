@@ -30,7 +30,7 @@ namespace kairosApp.Services
                 var cuenta = _context.CuentaUsuarios.Where(p => p.PersonaId == persona.Id).ToList();
                 if (cuenta.Any())
                 {
-                    return null;
+                    return new PersonaCuentaResource { Persona = null};
                 }
                 var usuarios = GetUsers(persona.Nombres, persona.Apellidos);
                 var personaCuenta = new PersonaCuentaResource { Persona = persona, Usuarios = usuarios };

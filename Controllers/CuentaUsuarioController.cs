@@ -12,6 +12,7 @@ using System.Diagnostics;
 using kairosApp.Resources.Support;
 using kairosApp.Models.Support;
 using kairosApp.Domain.Persistence.Contexts;
+using kairosApp.Models.Support.Mail;
 
 namespace kairosApp.Controllers
 {
@@ -24,6 +25,7 @@ namespace kairosApp.Controllers
         private readonly IActiveDirectoryService _activeDirectoryService;
         private readonly JwtSettings _jwtSettings;
         private readonly AppDbContext _context;
+        private readonly IEmailSender _emailSender;
 
         private IEnumerable<CuentaUsuario> logins = new List<CuentaUsuario>() {
             new CuentaUsuario() {
@@ -37,13 +39,14 @@ namespace kairosApp.Controllers
                         Username = "meldaban",
                 }
         };
-        public CuentaUsuarioController(ICuentaUsuarioService cuentaUsuarioService, IMapper mapper, IActiveDirectoryService activeDirectoryService, JwtSettings jwtSettings, AppDbContext context)
+        public CuentaUsuarioController(ICuentaUsuarioService cuentaUsuarioService, IMapper mapper, IActiveDirectoryService activeDirectoryService, JwtSettings jwtSettings, AppDbContext context, IEmailSender emailSender)
         {
             _cuentaUsuarioService = cuentaUsuarioService;
             _mapper = mapper;
             _activeDirectoryService = activeDirectoryService;
             _jwtSettings = jwtSettings;
             _context = context;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
@@ -75,7 +78,7 @@ namespace kairosApp.Controllers
             var cuentaResource = _mapper.Map<CuentaUsuario, CuentaUsuarioResource>(result.CuentaUsuario);
             return Ok(cuentaResource);
         }
-
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAsync(int id, [FromBody] SaveCuentaUsuarioResource resource)
         {
@@ -91,6 +94,7 @@ namespace kairosApp.Controllers
             var cuentaUsuarioResource = _mapper.Map<CuentaUsuario, CuentaUsuarioResource>(result.CuentaUsuario);
             return Ok(cuentaUsuarioResource);
         }
+        
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(UserCredentials credentials)
@@ -164,6 +168,30 @@ namespace kairosApp.Controllers
                 return NotFound("Credenciales Erroneas.");
             }
             return Ok("Contraseña cambiada exitosamente");
+        }
+        
+        [HttpPost]
+        [Route("verificaremail")]
+        public async Task<IActionResult> verifyEmail ( [FromBody] UserCredentials credentials)
+        {
+            var respuesta = _cuentaUsuarioService.VerifyEmail(credentials);
+            if (!respuesta)
+            {
+                return BadRequest(new ErrorResource { ErrorMessage = "Correo alterno incorrecto."});
+            }
+            try
+            {
+                var newPassWord = _cuentaUsuarioService.CreateNewPassword();
+                var message = new Message(new string[] { "codemazetest@mailinator.com" }, "Cambio de contraseña", "La nueva contraseña para su cuenta es: " + newPassWord);
+                _emailSender.SendEmail(message);
+                return Ok(new ResponseResource { Success = true, Message = "Contraseña reseteada con exito."});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ErrorResource { ErrorMessage = "Ha ocurrido un problema: " +ex.Message });
+            }
+            
+
         }
         [HttpGet]
         [Route("verificaralias/{alias}")]
