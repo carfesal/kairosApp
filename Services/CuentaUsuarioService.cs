@@ -100,9 +100,10 @@ namespace kairosApp.Services
             return aliasExistente;
         }
 
-        public bool VerifyEmail(UserCredentials credentials)
+        public bool VerifyEmail(PersonCredentials credentials)
         {
-            var usuario = _context.CuentaUsuarios.FirstOrDefault(p => p.Username == credentials.Username);
+            var usuario = _context.CuentaUsuarios.FirstOrDefault(p => p.PersonaId == credentials.PersonaId);
+            if (usuario == null) { return false; }
             var persona = _context.Personas.Find(usuario.PersonaId);
             if (usuario != null && persona != null && persona.CorreoAlterno.Equals(credentials.Correo))
             {

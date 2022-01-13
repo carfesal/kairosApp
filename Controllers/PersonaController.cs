@@ -79,11 +79,14 @@ namespace kairosApp.Controllers
         }
 
         [HttpGet]
-        [Route("cuenta/{identificacion}/{fecha}/{tipo}")]
-        public async Task<IActionResult> GetPersonWithAccount(string identificacion, string fecha, string tipo)
+        [Route("cuenta/{identificacion}")]
+        public async Task<IActionResult> GetPersonWithAccount(string identificacion)
         {
             //ACCION A LA OTRA BASE DE DATOS p ACTIVE DIRECTORY
-            return Ok("Se debe retornar info de la persona.");
+            var persona = _personaService.GetPersonWithAccountByCedula(identificacion);
+            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula." }); }
+            return Ok(persona);
+            
         }
     }
 

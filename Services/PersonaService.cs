@@ -4,6 +4,7 @@ using kairosApp.Domain.Services;
 using kairosApp.Domain.Services.Communication;
 using kairosApp.Models;
 using kairosApp.Resources;
+using kairosApp.Resources.Support;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -42,6 +43,23 @@ namespace kairosApp.Services
             }
         }
 
+        public PersonaConCuentaResource GetPersonWithAccountByCedula(string cedula)
+        {
+            try
+            {
+                var persona = _context.Personas.Where(p => p.Identificacion == cedula).Single();
+                var cuenta = _context.CuentaUsuarios.Where(p => p.PersonaId == persona.Id).ToList();
+                if (cuenta.Any())
+                {
+                    return new PersonaConCuentaResource { Success = true, Persona = persona};
+                }
+                return new PersonaConCuentaResource { Success = false, Persona = null };
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
         private IList<string> GetUsers(string nombres, string apellidos)
         {
             var contador = 0;

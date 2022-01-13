@@ -172,7 +172,7 @@ namespace kairosApp.Controllers
         
         [HttpPost]
         [Route("verificaremail")]
-        public async Task<IActionResult> verifyEmail ( [FromBody] UserCredentials credentials)
+        public async Task<IActionResult> verifyEmail ( [FromBody] PersonCredentials credentials)
         {
             var respuesta = _cuentaUsuarioService.VerifyEmail(credentials);
             if (!respuesta)
@@ -206,7 +206,7 @@ namespace kairosApp.Controllers
         }
 
         [HttpGet]
-        [Route("verificarusername/{username}")]
+        [Route("verificarusername/{username }")]
         public async Task<IActionResult> verifyUsername(string username)
         {
             var respuesta = _cuentaUsuarioService.VerifyUsername(username);
