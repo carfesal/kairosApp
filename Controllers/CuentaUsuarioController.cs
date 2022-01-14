@@ -206,7 +206,7 @@ namespace kairosApp.Controllers
         }
 
         [HttpGet]
-        [Route("verificarusername/{username }")]
+        [Route("verificarusername/{username}")]
         public async Task<IActionResult> verifyUsername(string username)
         {
             var respuesta = _cuentaUsuarioService.VerifyUsername(username);

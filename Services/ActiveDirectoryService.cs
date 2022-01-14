@@ -133,12 +133,12 @@ namespace kairosApp.Services
 
         public string login(string userName, string password)
         {
-            using (DirectoryEntry entry = new DirectoryEntry(path, userName, password))
+            using (DirectoryEntry entry = new DirectoryEntry("LDAP://espol.edu.ec", "csiusrpw", "T3st*12$"))
             {
                 using (DirectorySearcher searcher = new DirectorySearcher(entry))
                 {
                     //Buscamos por la propiedad SamAccountName
-                    searcher.Filter = "(samaccountname=" + userName + ")";
+                    searcher.Filter = "(samaccountname=" + "csiusrpw" + ")";
                     //Buscamos el usuario con la cuenta indicada
                     var result = searcher.FindOne();
                     if (result != null)
