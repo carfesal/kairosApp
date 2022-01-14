@@ -13,5 +13,7 @@ namespace kairosApp.Domain.Services
         bool ChangePassword(string userName, string password);
         bool ResetPassword(string userName, string password);
 
+        bool CreateUser(string userName);
+
     }
 }

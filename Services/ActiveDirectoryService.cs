@@ -131,7 +131,7 @@ namespace kairosApp.Services
             return ds;
         }
 
-        public string login(string userName, string password)
+        public string Login(string userName, string password)
         {
             using (DirectoryEntry entry = new DirectoryEntry("LDAP://espol.edu.ec", "csiusrpw", "T3st*12$"))
             {
@@ -145,11 +145,14 @@ namespace kairosApp.Services
                     {
                         string role = "";
                         //Comporbamos las propiedades del usuario
+                        Debug.WriteLine(result.ToString);
                         ResultPropertyCollection fields = result.Properties;
                         foreach (String ldapField in fields.PropertyNames)
                         {
+                            Debug.WriteLine("Propiedad Active Directory: " + ldapField);
                             foreach (Object myCollection in fields[ldapField])
                             {
+                                Debug.WriteLine("Valor de la propiedad:" + myCollection.ToString());
                                 if (ldapField == "employeetype")
                                     role = myCollection.ToString().ToLower();
                             }
@@ -180,10 +183,7 @@ namespace kairosApp.Services
             }
         }
 
-        public string Login(string userName, string password)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public bool ChangePassword(string userName, string password)
         {
@@ -206,6 +206,67 @@ namespace kairosApp.Services
             //user.ExpirePasswordNow();
             user.Save();
             return true;
+        }
+
+        public bool CreateUser(string userName)
+        {
+            // Creating the PrincipalContext
+            PrincipalContext principalContext = null;
+            try
+            {
+                principalContext = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec");
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Failed to create PrincipalContext. Exception: " + e);
+                return false;
+            }
+
+            // Check if user object already exists in the store
+            UserPrincipal usr = UserPrincipal.FindByIdentity(principalContext, userName);
+            if (usr != null)
+            {
+                Debug.WriteLine(userName + " already exists. Please use a different User Logon Name.");
+                return false;
+            }
+
+            // Create the new UserPrincipal object
+            UserPrincipal userPrincipal = new UserPrincipal(principalContext);
+            /*
+            if (lastName != null && lastName.Length > 0)
+                userPrincipal.Surname = lastName;
+
+            if (firstName != null && firstName.Length > 0)
+                userPrincipal.GivenName = firstName;
+
+            if (employeeID != null && employeeID.Length > 0)
+                userPrincipal.EmployeeId = employeeID;
+
+            if (emailAddress != null && emailAddress.Length > 0)
+                userPrincipal.EmailAddress = emailAddress;
+
+            if (telephone != null && telephone.Length > 0)
+                userPrincipal.VoiceTelephoneNumber = telephone;
+
+            if (userName != null && userName.Length > 0)
+                userPrincipal.SamAccountName = userName;
+            */
+            var pwdOfNewlyCreatedUser = "abcde@@12345!~";
+            userPrincipal.SetPassword(pwdOfNewlyCreatedUser);
+
+            userPrincipal.Enabled = true;
+            //userPrincipal.ExpirePasswordNow();
+
+            try
+            {
+                userPrincipal.Save();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Exception creating user object. " + e);
+                return false;
+            }
         }
     }
 

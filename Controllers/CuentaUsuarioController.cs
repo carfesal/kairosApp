@@ -149,10 +149,8 @@ namespace kairosApp.Controllers
             bool info = false;
             //CODIGO DEL ACTIVE DIRECTORY SERVICE
 
-            if (info)
-            {
-                return NotFound("Credenciales Erroneas.");
-            }
+            var respuesta = _activeDirectoryService.CreateUser(credentials.Username);
+            Debug.WriteLine("Se creo el usuario: "+ respuesta);
             return Ok("Contraseña cambiada exitosamente");
         }
 
