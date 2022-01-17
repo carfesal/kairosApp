@@ -148,6 +148,7 @@ namespace kairosApp.Controllers
         {
             bool info = false;
             //CODIGO DEL ACTIVE DIRECTORY SERVICE
+            //_activeDirectoryService.GetAUser("hcarden");
             _activeDirectoryService.GetAdditionalUserInfo();
             //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = null, Username = "csrlod"});
             //Debug.WriteLine("Se creo el usuario: "+ respuesta);

@@ -89,7 +89,7 @@ namespace kairosApp.Services
         public void GetAUser(string userName)
         {
             DirectorySearcher ds = null;
-            DirectoryEntry de = new DirectoryEntry(GetCurrentDomainPath());
+            DirectoryEntry de = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$");
             SearchResult sr;
 
             // Build User Searcher
