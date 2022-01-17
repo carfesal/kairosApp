@@ -149,7 +149,16 @@ namespace kairosApp.Services
                     //Buscamos por la propiedad SamAccountName
                     searcher.Filter = "(samaccountname=" + "hcarden" + ")";
                     //Buscamos el usuario con la cuenta indicada
-                    var result = searcher.FindOne();
+                    SearchResult result = null;
+                    try
+                    {
+                        result = searcher.FindOne();
+                    }
+                    catch (DirectoryServicesCOMException e)
+                    {
+                        return null;
+                    }
+
                     if (result != null)
                     {
                         string role = "";
@@ -223,7 +232,7 @@ namespace kairosApp.Services
             PrincipalContext principalContext = null;
             try
             {
-                principalContext = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
+                principalContext = new PrincipalContext(ContextType.Domain, "192.168.253.3", "DC=espol,DC=edu,DC=ec", "buscador", "T3st*12$");
             }
             catch (Exception e)
             {
@@ -268,7 +277,7 @@ namespace kairosApp.Services
 
             try
             {
-                userPrincipal.Save();
+                //userPrincipal.Save();
                 return true;
             }
             catch (Exception e)
