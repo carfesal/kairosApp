@@ -148,9 +148,9 @@ namespace kairosApp.Controllers
         {
             bool info = false;
             //CODIGO DEL ACTIVE DIRECTORY SERVICE
-
-            var respuesta = _activeDirectoryService.CreateUser(credentials.Username);
-            Debug.WriteLine("Se creo el usuario: "+ respuesta);
+            _activeDirectoryService.GetAdditionalUserInfo();
+            //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = null, Username = "csrlod"});
+            //Debug.WriteLine("Se creo el usuario: "+ respuesta);
             return Ok("Contraseña cambiada exitosamente");
         }
 

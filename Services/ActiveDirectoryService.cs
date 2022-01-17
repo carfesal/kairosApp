@@ -1,5 +1,6 @@
 ﻿using kairosApp.Domain.Services;
 using kairosApp.Extensions;
+using kairosApp.Models.Support;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
@@ -28,7 +29,7 @@ namespace kairosApp.Services
         {
             SearchResultCollection results;
             DirectorySearcher ds = null;
-            DirectoryEntry de = new DirectoryEntry(GetCurrentDomainPath());
+            DirectoryEntry de = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$");
 
             ds = new DirectorySearcher(de);
 
@@ -50,30 +51,35 @@ namespace kairosApp.Services
             // Distinguished Name
             ds.PropertiesToLoad.Add("distinguishedName");
 
+            ds.PropertiesToLoad.Add("physicalDeliveryOfficeName");
+
             ds.Filter = "(&(objectCategory=User)(objectClass=person))";
 
             results = ds.FindAll();
 
             foreach (SearchResult sr in results)
             {
+                if (sr.Properties["physicalDeliveryOfficeName"].Count > 0)
+                    Debug.WriteLine("Imprimiendo propiedad physicalDeliveryOfficeName: " + sr.Properties["physicalDeliveryOfficeName"][0].ToString());
+
                 if (sr.Properties["name"].Count > 0)
-                    Debug.WriteLine(sr.Properties["name"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad name: " + sr.Properties["physicalDeliveryOfficeName"][0].ToString());
 
                 // If not filled in, then you will get an error
                 if (sr.Properties["mail"].Count > 0)
-                    Debug.WriteLine(sr.Properties["mail"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad mail: " + sr.Properties["mail"][0].ToString());
 
                 if (sr.Properties["givenname"].Count > 0)
-                    Debug.WriteLine(sr.Properties["givenname"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad givenname: " + sr.Properties["givenname"][0].ToString());
 
                 if (sr.Properties["sn"].Count > 0)
-                    Debug.WriteLine(sr.Properties["sn"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad surname: " + sr.Properties["sn"][0].ToString());
 
                 if (sr.Properties["userPrincipalName"].Count > 0)
-                    Debug.WriteLine(sr.Properties["userPrincipalName"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad userPrincipalName: " + sr.Properties["userPrincipalName"][0].ToString());
 
                 if (sr.Properties["distinguishedName"].Count > 0)
-                    Debug.WriteLine(sr.Properties["distinguishedName"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad distinguishedName: " + sr.Properties["distinguishedName"][0].ToString());
             }
         }
 
@@ -133,7 +139,7 @@ namespace kairosApp.Services
 
         public string Login(string userName, string password)
         {
-            using (DirectoryEntry entry = new DirectoryEntry("LDAP://espol.edu.ec", "csiusrpw", "T3st*12$"))
+            using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$"))
             {
                 using (DirectorySearcher searcher = new DirectorySearcher(entry))
                 {
@@ -192,7 +198,7 @@ namespace kairosApp.Services
 
         public bool ResetPassword(string userName, string password)
         {
-            PrincipalContext context = new PrincipalContext(ContextType.Domain, path);
+            PrincipalContext context = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec", "buscador", "T3st*12$");
             UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, userName);
             if(user == null)
             {
@@ -208,13 +214,13 @@ namespace kairosApp.Services
             return true;
         }
 
-        public bool CreateUser(string userName)
+        public bool CreateUser(ADCreateUser user)
         {
             // Creating the PrincipalContext
             PrincipalContext principalContext = null;
             try
             {
-                principalContext = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec");
+                principalContext = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
             }
             catch (Exception e)
             {
@@ -223,10 +229,10 @@ namespace kairosApp.Services
             }
 
             // Check if user object already exists in the store
-            UserPrincipal usr = UserPrincipal.FindByIdentity(principalContext, userName);
+            UserPrincipal usr = UserPrincipal.FindByIdentity(principalContext, user.Username);
             if (usr != null)
             {
-                Debug.WriteLine(userName + " already exists. Please use a different User Logon Name.");
+                Debug.WriteLine(user.Username + " already exists. Please use a different User Logon Name.");
                 return false;
             }
 
@@ -246,11 +252,11 @@ namespace kairosApp.Services
                 userPrincipal.EmailAddress = emailAddress;
 
             if (telephone != null && telephone.Length > 0)
-                userPrincipal.VoiceTelephoneNumber = telephone;
+                userPrincipal.VoiceTelephoneNumber = telephone;*/
 
-            if (userName != null && userName.Length > 0)
-                userPrincipal.SamAccountName = userName;
-            */
+            if (user.Username != null && user.Username.Length > 0)
+                userPrincipal.SamAccountName = user.Username;
+            
             var pwdOfNewlyCreatedUser = "abcde@@12345!~";
             userPrincipal.SetPassword(pwdOfNewlyCreatedUser);
 

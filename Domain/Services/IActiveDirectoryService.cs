@@ -1,4 +1,5 @@
-﻿using System.DirectoryServices;
+﻿using kairosApp.Models.Support;
+using System.DirectoryServices;
 
 namespace kairosApp.Domain.Services
 {
@@ -13,7 +14,7 @@ namespace kairosApp.Domain.Services
         bool ChangePassword(string userName, string password);
         bool ResetPassword(string userName, string password);
 
-        bool CreateUser(string userName);
+        bool CreateUser(ADCreateUser newUser);
 
     }
 }
