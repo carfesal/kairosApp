@@ -63,7 +63,7 @@ namespace kairosApp.Services
                     Debug.WriteLine("Imprimiendo propiedad physicalDeliveryOfficeName: " + sr.Properties["physicalDeliveryOfficeName"][0].ToString());
 
                 if (sr.Properties["name"].Count > 0)
-                    Debug.WriteLine("Imprimiendo propiedad name: " + sr.Properties["physicalDeliveryOfficeName"][0].ToString());
+                    Debug.WriteLine("Imprimiendo propiedad name: " + sr.Properties["name"][0].ToString());
 
                 // If not filled in, then you will get an error
                 if (sr.Properties["mail"].Count > 0)
@@ -142,12 +142,12 @@ namespace kairosApp.Services
 
         public string Login(string userName, string password)
         {
-            using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$"))
+            using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", "hcarden", "T3st*12$"))
             {
                 using (DirectorySearcher searcher = new DirectorySearcher(entry))
                 {
                     //Buscamos por la propiedad SamAccountName
-                    searcher.Filter = "(samaccountname=" + "csiusrpw" + ")";
+                    searcher.Filter = "(samaccountname=" + "hcarden" + ")";
                     //Buscamos el usuario con la cuenta indicada
                     var result = searcher.FindOne();
                     if (result != null)
