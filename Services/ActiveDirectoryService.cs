@@ -228,7 +228,7 @@ namespace kairosApp.Services
 
         public bool CreateUser(ADCreateUser user)
         {
-            // Creating the PrincipalContext
+            /*// Creating the PrincipalContext
             PrincipalContext principalContext = null;
             try
             {
@@ -249,7 +249,7 @@ namespace kairosApp.Services
             }
 
             // Create the new UserPrincipal object
-            UserPrincipal userPrincipal = new UserPrincipal(principalContext);
+            UserPrincipal userPrincipal = new UserPrincipal(principalContext);*/
             /*
             if (lastName != null && lastName.Length > 0)
                 userPrincipal.Surname = lastName;
@@ -265,7 +265,7 @@ namespace kairosApp.Services
 
             if (telephone != null && telephone.Length > 0)
                 userPrincipal.VoiceTelephoneNumber = telephone;
-            */
+            
             if (user.Username != null && user.Username.Length > 0)
                 userPrincipal.SamAccountName = user.Username;
             
@@ -284,15 +284,17 @@ namespace kairosApp.Services
             {
                 Debug.WriteLine("Exception creating user object. " + e);
                 return false;
-            }
-            /*DirectoryEntry ouEntry = new DirectoryEntry("LDAP://192.168.253.3/OU=Users", "buscador", "T3st*12$");
-
+            }*/
+            DirectoryEntry ouEntry = new DirectoryEntry("LDAP://192.168.253.3"/*, "buscador", "T3st*12$"*/);
+            ouEntry.Path = "LDAP://OU=Users,DC=espol,DC=edu,DC=ec";
+            ouEntry.AuthenticationType = AuthenticationTypes.Secure;
             try
             {
                 DirectoryEntry childEntry = ouEntry.Children.Add("CN="+user.Username, "user");
                 childEntry.CommitChanges();
                 ouEntry.CommitChanges();
-                childEntry.Invoke("SetPassword", new object[] { "HOLIWIS" });
+                childEntry.Invoke("SetPassword", "Holiwis");
+                childEntry.Invoke("Put", new object[] { "userAccountControl", "512" });
                 childEntry.CommitChanges();
                 return true;
             }
@@ -300,7 +302,7 @@ namespace kairosApp.Services
             {
                 Debug.WriteLine(ex.Message);
                 return false;
-            }*/
+            }
         }
     }
 
