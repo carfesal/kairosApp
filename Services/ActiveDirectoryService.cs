@@ -210,7 +210,7 @@ namespace kairosApp.Services
 
         public bool ResetPassword(string userName, string password)
         {
-            PrincipalContext context = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec", "buscador", "T3st*12$");
+            /*PrincipalContext context = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec", "buscador", "T3st*12$");
             UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, userName);
             if(user == null)
             {
@@ -223,7 +223,30 @@ namespace kairosApp.Services
             //Force user to change password at next logon
             //user.ExpirePasswordNow();
             user.Save();
-            return true;
+            return true;*/
+
+            DirectoryEntry domainEntry = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$"));
+            DirectorySearcher dirSearcher = new DirectorySearcher(domainEntry);
+            string filter = string.Format("(SAMAccountName={0})", userName);
+            dirSearcher.Filter = filter;
+            SearchResult result = dirSearcher.FindOne();
+            if (result != null)
+            {
+                DirectoryEntry userEntry = result.GetDirectoryEntry();
+
+                //Enable Account if it is disabled
+                userEntry.Properties["userAccountControl"].Value = 0x200;
+                //Reset User Password
+                userEntry.Invoke("SetPassword", new object[] { password });
+                //Force user to change password at next logon
+                userEntry.Properties["pwdlastset"][0] = 0;
+                userEntry.CommitChanges();
+                userEntry.Close();
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public bool CreateUser(ADCreateUser user)
@@ -285,9 +308,9 @@ namespace kairosApp.Services
                 Debug.WriteLine("Exception creating user object. " + e);
                 return false;
             }*/
-            DirectoryEntry ouEntry = new DirectoryEntry("LDAP://192.168.253.3"/*, "buscador", "T3st*12$"*/);
-            ouEntry.Path = "LDAP://OU=Users,DC=espol,DC=edu,DC=ec";
-            ouEntry.AuthenticationType = AuthenticationTypes.Secure;
+            DirectoryEntry ouEntry = new DirectoryEntry("espol.edu.ec"/*, "buscador", "T3st*12$"*/);
+            //ouEntry.Path = "LDAP://OU=Users,DC=espol,DC=edu,DC=ec";
+            //ouEntry.AuthenticationType = AuthenticationTypes.Secure;
             try
             {
                 DirectoryEntry childEntry = ouEntry.Children.Add("CN="+user.Username, "user");
