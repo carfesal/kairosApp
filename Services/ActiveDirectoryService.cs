@@ -30,7 +30,7 @@ namespace kairosApp.Services
             SearchResultCollection results;
             DirectorySearcher ds = null;
             DirectoryEntry de = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$");
-
+            var contador = 0;
             ds = new DirectorySearcher(de);
 
             // Full Name
@@ -80,7 +80,10 @@ namespace kairosApp.Services
 
                 if (sr.Properties["distinguishedName"].Count > 0)
                     Debug.WriteLine("Imprimiendo propiedad distinguishedName: " + sr.Properties["distinguishedName"][0].ToString());
+                contador++;
             }
+
+            Debug.WriteLine("Numero de Usuarios: "+contador);
         }
 
         /**
