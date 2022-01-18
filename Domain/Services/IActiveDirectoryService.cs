@@ -11,7 +11,7 @@ namespace kairosApp.Domain.Services
         void GetAdditionalUserInfo();
 
         string Login(string userName, string password);
-        bool ChangePassword(string userName, string password);
+        bool ChangePassword(string userName, string password, string newPassword);
         bool ResetPassword(string userName, string password);
 
         bool CreateUser(ADCreateUser newUser);

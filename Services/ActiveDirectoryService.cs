@@ -142,12 +142,12 @@ namespace kairosApp.Services
 
         public string Login(string userName, string password)
         {
-            using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", "hcarden", "T3st*12$"))
+            using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", userName, password))
             {
                 using (DirectorySearcher searcher = new DirectorySearcher(entry))
                 {
                     //Buscamos por la propiedad SamAccountName
-                    searcher.Filter = "(samaccountname=" + "hcarden" + ")";
+                    searcher.Filter = "(samaccountname=" + userName + ")";
                     //Buscamos el usuario con la cuenta indicada
                     SearchResult result = null;
                     try
@@ -156,12 +156,13 @@ namespace kairosApp.Services
                     }
                     catch (DirectoryServicesCOMException e)
                     {
+                        Debug.WriteLine(e.Message);
                         return null;
                     }
 
                     if (result != null)
                     {
-                        string role = "";
+                        string un = "";
                         //Comporbamos las propiedades del usuario
                         Debug.WriteLine(result.ToString);
                         ResultPropertyCollection fields = result.Properties;
@@ -171,27 +172,10 @@ namespace kairosApp.Services
                             foreach (Object myCollection in fields[ldapField])
                             {
                                 Debug.WriteLine("Valor de la propiedad:" + myCollection.ToString());
-                                if (ldapField == "employeetype")
-                                    role = myCollection.ToString().ToLower();
+                                if (ldapField == "userPrincipalName")
+                                    un = myCollection.ToString().ToLower();
                             }
                         }
-                        /*
-                        //Añadimos los claims Usuario y Rol para tenerlos disponibles en la Cookie
-                        //Podríamos obtenerlos de una base de datos.
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.Name, credentials.Username),
-                            new Claim(ClaimTypes.Role, role)
-                        };
-
-                        //Creamos el principal
-                        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-                        //Generamos la cookie. SignInAsync es un método de extensión del contexto.
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-                        */
-                        //Redirigimos a la Home
                         return result.ToString();
 
                     }
@@ -203,7 +187,7 @@ namespace kairosApp.Services
 
         
 
-        public bool ChangePassword(string userName, string password)
+        public bool ChangePassword(string userName, string password, string newPassword)
         {
             throw new NotImplementedException();
         }
@@ -247,12 +231,12 @@ namespace kairosApp.Services
                 userEntry.Properties["pwdlastset"][0] = 0;
                 userEntry.CommitChanges();
                 userEntry.Close();
-                return true;*/
-        }
+                return true;
+            }
             else
             {
                 return false;
-            }
+            }*/
         }
 
         public bool CreateUser(ADCreateUser user)
@@ -280,20 +264,20 @@ namespace kairosApp.Services
             // Create the new UserPrincipal object
             UserPrincipal userPrincipal = new UserPrincipal(principalContext);*/
             /*
-            if (lastName != null && lastName.Length > 0)
-                userPrincipal.Surname = lastName;
+            if (user.Persona.Apellidos != null && user.Persona.Apellidos.Length > 0)
+                userPrincipal.Surname = user.Persona.Apellidos;
 
-            if (firstName != null && firstName.Length > 0)
-                userPrincipal.GivenName = firstName;
+            if (user.Persona.Nombres != null && user.Persona.Nombres.Length > 0)
+                userPrincipal.GivenName = user.Persona.Nombres;
 
-            if (employeeID != null && employeeID.Length > 0)
-                userPrincipal.EmployeeId = employeeID;
+            if (user.Persona.Identificacion != null && user.Persona.Identificacion.Length > 0)
+                userPrincipal.EmployeeId = user.Persona.Identificacion;
 
-            if (emailAddress != null && emailAddress.Length > 0)
-                userPrincipal.EmailAddress = emailAddress;
+            if (user.Username != null && user.Username.Length > 0)
+                userPrincipal.EmailAddress = user.Username+"@espol.edu.ec";
 
-            if (telephone != null && telephone.Length > 0)
-                userPrincipal.VoiceTelephoneNumber = telephone;
+            if (user.Persona.Telefono != null && user.Persona.Telefono.Length > 0)
+                userPrincipal.VoiceTelephoneNumber = user.Persona.Telefono;
             
             if (user.Username != null && user.Username.Length > 0)
                 userPrincipal.SamAccountName = user.Username;
