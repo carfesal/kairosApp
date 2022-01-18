@@ -99,19 +99,6 @@ namespace kairosApp.Controllers
         [Route("login")]
         public async Task<IActionResult> Login(UserCredentials credentials)
         {
-            /*try
-            {
-                var usuario = _activeDirectoryService.Login(credentials.Username, credentials.Password);
-                if (usuario == null)
-                {
-                    return BadRequest("Credenciales erroneas");
-                }
-                return Ok(usuario);
-                    
-            }catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }*/
             try
             {
                 var Token = new UserTokens();
