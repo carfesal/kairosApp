@@ -38,6 +38,8 @@ namespace kairosApp.Services
 
             // Email Address
             ds.PropertiesToLoad.Add("mail");
+            // Email Address
+            ds.PropertiesToLoad.Add("employeeid");
 
             // First Name
             ds.PropertiesToLoad.Add("givenname");
@@ -61,6 +63,9 @@ namespace kairosApp.Services
             {
                 if (sr.Properties["physicalDeliveryOfficeName"].Count > 0)
                     Debug.WriteLine("Imprimiendo propiedad physicalDeliveryOfficeName: " + sr.Properties["physicalDeliveryOfficeName"][0].ToString());
+                
+                if (sr.Properties["employeeid"].Count > 0)
+                    Debug.WriteLine("Imprimiendo propiedad employeeid: " + sr.Properties["employeeid"][0].ToString());
 
                 if (sr.Properties["name"].Count > 0)
                     Debug.WriteLine("Imprimiendo propiedad name: " + sr.Properties["name"][0].ToString());
@@ -110,6 +115,9 @@ namespace kairosApp.Services
                 Debug.WriteLine(sr.GetPropertyValue("sn"));
                 Debug.WriteLine(sr.GetPropertyValue("userPrincipalName"));
                 Debug.WriteLine(sr.GetPropertyValue("distinguishedName"));
+                Debug.WriteLine(sr.GetPropertyValue("physicalDeliveryOfficeName"));
+                Debug.WriteLine(sr.GetPropertyValue("telephoneNumber"));
+                Debug.WriteLine(sr.GetPropertyValue("employeeid"));
             }
         }
 
@@ -124,7 +132,8 @@ namespace kairosApp.Services
 
             // Email Address
             ds.PropertiesToLoad.Add("mail");
-
+            
+            ds.PropertiesToLoad.Add("physicalDeliveryOfficeName");
             // First Name
             ds.PropertiesToLoad.Add("givenname");
 
@@ -136,16 +145,44 @@ namespace kairosApp.Services
 
             // Distinguished Name
             ds.PropertiesToLoad.Add("distinguishedName");
+            
+            ds.PropertiesToLoad.Add("telephoneNumber");
+            
+            // EmployeeID
+            ds.PropertiesToLoad.Add("employeeid");
 
             return ds;
         }
 
-        public string Login(string userName, string password)
+        public ADToDBUser Login(string userName, string password)
         {
             using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", userName, password))
             {
                 using (DirectorySearcher searcher = new DirectorySearcher(entry))
                 {
+                    // Full Name
+                    searcher.PropertiesToLoad.Add("name");
+
+                    // Email Address
+                    searcher.PropertiesToLoad.Add("mail");
+
+                    searcher.PropertiesToLoad.Add("physicalDeliveryOfficeName");
+                    // First Name
+                    searcher.PropertiesToLoad.Add("givenname");
+
+                    // Last Name (Surname)
+                    searcher.PropertiesToLoad.Add("sn");
+
+                    // Login Name
+                    searcher.PropertiesToLoad.Add("userPrincipalName");
+
+                    // Distinguished Name
+                    searcher.PropertiesToLoad.Add("distinguishedName");
+
+                    searcher.PropertiesToLoad.Add("telephoneNumber");
+
+                    // EmployeeID
+                    searcher.PropertiesToLoad.Add("employeeid");
                     //Buscamos por la propiedad SamAccountName
                     searcher.Filter = "(samaccountname=" + userName + ")";
                     //Buscamos el usuario con la cuenta indicada
@@ -162,21 +199,41 @@ namespace kairosApp.Services
 
                     if (result != null)
                     {
-                        string un = "";
+                        ADToDBUser paraCrear = new ADToDBUser { CuentaUsuario = new Models.CuentaUsuario(), Persona = new Models.Persona()};
+                        Debug.WriteLine(result.GetPropertyValue("name"));
+                        paraCrear.CuentaUsuario.Username = result.GetPropertyValue("name");
+                        Debug.WriteLine(result.GetPropertyValue("mail"));
+                        paraCrear.Persona.CorreoAlterno = result.GetPropertyValue("mail");
+                        Debug.WriteLine(result.GetPropertyValue("givenname"));
+                        paraCrear.Persona.Nombres = result.GetPropertyValue("givenname");
+                        Debug.WriteLine(result.GetPropertyValue("sn"));
+                        paraCrear.Persona.Apellidos = result.GetPropertyValue("sn");
+                        Debug.WriteLine(result.GetPropertyValue("userPrincipalName"));
+                        Debug.WriteLine(result.GetPropertyValue("distinguishedName"));
+                        Debug.WriteLine(result.GetPropertyValue("physicalDeliveryOfficeName"));
+                        paraCrear.Persona.Unidad = result.GetPropertyValue("physicalDeliveryOfficeName");
+                        Debug.WriteLine(result.GetPropertyValue("telephoneNumber"));
+                        paraCrear.Persona.Telefono = result.GetPropertyValue("telephoneNumber");
+                        Debug.WriteLine(result.GetPropertyValue("employeeid"));
+                        paraCrear.Persona.Identificacion = result.GetPropertyValue("employeeid");
+                        paraCrear.CuentaUsuario.Alias = result.GetPropertyValue("givenname").Split(" ")[0] + "." + result.GetPropertyValue("sn").Split(" ")[0];
+                        return paraCrear;
+                        /*string un = "";
                         //Comporbamos las propiedades del usuario
                         Debug.WriteLine(result.ToString);
                         ResultPropertyCollection fields = result.Properties;
+                        ADToDBUser paraCrear = new ADToDBUser();
                         foreach (String ldapField in fields.PropertyNames)
                         {
                             Debug.WriteLine("Propiedad Active Directory: " + ldapField);
                             foreach (Object myCollection in fields[ldapField])
                             {
                                 Debug.WriteLine("Valor de la propiedad:" + myCollection.ToString());
-                                if (ldapField == "userPrincipalName")
+                                if (ldapField == "sn")
                                     un = myCollection.ToString().ToLower();
                             }
                         }
-                        return result.ToString();
+                        return un;*/
 
                     }
                     else
@@ -194,28 +251,37 @@ namespace kairosApp.Services
 
         public bool ResetPassword(string userName, string password)
         {
-            /*PrincipalContext context = new PrincipalContext(ContextType.Domain, "espol.edu.ec", "DC=espol,DC=edu,DC=ec", "buscador", "T3st*12$");
-            UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, userName);
-            if(user == null)
+            try
             {
+                PrincipalContext context = new PrincipalContext(ContextType.Domain, "192.168.253.3", "DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
+                UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, userName);
+                if (user == null)
+                {
+                    return false;
+                }
+                //Enable Account if it is disabled
+                user.Enabled = true;
+                //Reset User Password
+                user.SetPassword(password);
+                //Force user to change password at next logon
+                //user.ExpirePasswordNow();
+                user.Save();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Ocurrio un error: " + e.Message);
                 return false;
             }
-            //Enable Account if it is disabled
-            user.Enabled = true;
-            //Reset User Password
-            user.SetPassword(password);
-            //Force user to change password at next logon
-            //user.ExpirePasswordNow();
-            user.Save();
-            return true;*/
+            
 
-            DirectoryEntry domainEntry = new DirectoryEntry("LDAP://192.168.253.3:636/CN=sugfimcp,OU=Users,OU=FIMCP,DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
+            /*DirectoryEntry domainEntry = new DirectoryEntry("LDAP://192.168.253.3/CN=sugfimcp,OU=Users,OU=FIMCP,DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
             DirectorySearcher dirSearcher = new DirectorySearcher(domainEntry);
             domainEntry.Invoke("SetPassword", new object[] { "carLitosd124" });
             domainEntry.Properties["LockOutTime"].Value = 0; //unlock account
             domainEntry.CommitChanges();
             domainEntry.Close();
-            return true;
+            return true;*/
             /*string filter = string.Format("(SAMAccountName={0})", userName);
             dirSearcher.Filter = filter;
             SearchResult result = dirSearcher.FindOne();
@@ -241,11 +307,11 @@ namespace kairosApp.Services
 
         public bool CreateUser(ADCreateUser user)
         {
-            /*// Creating the PrincipalContext
+            // Creating the PrincipalContext
             PrincipalContext principalContext = null;
             try
             {
-                principalContext = new PrincipalContext(ContextType.Domain, "192.168.253.3", "OU=Users,DC=espol,DC=edu,DC=ec", "buscador", "T3st*12$");
+                principalContext = new PrincipalContext(ContextType.Domain, "192.168.253.3", "DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
             }
             catch (Exception e)
             {
@@ -262,27 +328,32 @@ namespace kairosApp.Services
             }
 
             // Create the new UserPrincipal object
-            UserPrincipal userPrincipal = new UserPrincipal(principalContext);*/
-            /*
+            UserPrincipal userPrincipal = new UserPrincipal(principalContext);
+            
             if (user.Persona.Apellidos != null && user.Persona.Apellidos.Length > 0)
                 userPrincipal.Surname = user.Persona.Apellidos;
-
+                
             if (user.Persona.Nombres != null && user.Persona.Nombres.Length > 0)
                 userPrincipal.GivenName = user.Persona.Nombres;
 
             if (user.Persona.Identificacion != null && user.Persona.Identificacion.Length > 0)
                 userPrincipal.EmployeeId = user.Persona.Identificacion;
+                
 
             if (user.Username != null && user.Username.Length > 0)
                 userPrincipal.EmailAddress = user.Username+"@espol.edu.ec";
+                userPrincipal.UserPrincipalName = user.Username+ "@espol.edu.ec";
 
             if (user.Persona.Telefono != null && user.Persona.Telefono.Length > 0)
                 userPrincipal.VoiceTelephoneNumber = user.Persona.Telefono;
             
             if (user.Username != null && user.Username.Length > 0)
                 userPrincipal.SamAccountName = user.Username;
+                userPrincipal.Name = user.Username;
+
             
-            var pwdOfNewlyCreatedUser = "abcde@@12345!~";
+            
+            var pwdOfNewlyCreatedUser = "fweoSD654";
             userPrincipal.SetPassword(pwdOfNewlyCreatedUser);
 
             userPrincipal.Enabled = true;
@@ -290,18 +361,18 @@ namespace kairosApp.Services
 
             try
             {
-                //userPrincipal.Save();
+                userPrincipal.Save();
                 return true;
             }
             catch (Exception e)
             {
                 Debug.WriteLine("Exception creating user object. " + e);
                 return false;
-            }*/
-            DirectoryEntry ouEntry = new DirectoryEntry("espol.edu.ec"/*, "buscador", "T3st*12$"*/);
+            }
+            //DirectoryEntry ouEntry = new DirectoryEntry("espol.edu.ec"/*, "buscador", "T3st*12$"*/);
             //ouEntry.Path = "LDAP://OU=Users,DC=espol,DC=edu,DC=ec";
             //ouEntry.AuthenticationType = AuthenticationTypes.Secure;
-            try
+            /*try
             {
                 DirectoryEntry childEntry = ouEntry.Children.Add("CN="+user.Username, "user");
                 childEntry.CommitChanges();
@@ -315,7 +386,7 @@ namespace kairosApp.Services
             {
                 Debug.WriteLine(ex.Message);
                 return false;
-            }
+            }*/
         }
     }
 

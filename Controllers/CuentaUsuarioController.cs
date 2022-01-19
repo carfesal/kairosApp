@@ -119,13 +119,31 @@ namespace kairosApp.Controllers
                 }
                 else
                 {
-                    return BadRequest(new ErrorResource { ErrorMessage = "Usuario y/o contraseña erroneos"});
+                    ADToDBUser ADUser = _activeDirectoryService.Login(credentials.Username, credentials.Password);
+                    if(ADUser == null)
+                    {
+                        Persona persona = ADUser.Persona;
+                        _context.Personas.Add(persona);
+                        _context.SaveChanges();
+                        CuentaUsuario cu = ADUser.CuentaUsuario;
+                        cu.IsActive = true;
+                        cu.PersonaId = persona.Id;
+                        _context.SaveChanges();
+                        Token = JwtHelpers.GenTokenkey(new UserTokens()
+                        {
+                            Username = cu.Username,
+                            Id = cu.Id,
+                            Persona = persona,
+                        }, _jwtSettings);
+                        
+                    }
+                    
                 }
                 return Ok(Token);
             }
             catch (Exception ex)
             {
-                throw;
+                return BadRequest(new ErrorResource { ErrorMessage = "Ocurrio un error" });
             }
 
         }
@@ -137,9 +155,9 @@ namespace kairosApp.Controllers
             //CODIGO DEL ACTIVE DIRECTORY SERVICE
             //_activeDirectoryService.GetAUser("hcarden");
             //_activeDirectoryService.GetAdditionalUserInfo();
-            //var respuesta = _activeDirectoryService.Login("hcarden", "T3st*12$");
-            //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = null, Username = "csrlod"});
-            var respuesta = _activeDirectoryService.ResetPassword("asdfasd", "asfasf");
+            var respuesta = _activeDirectoryService.Login("sugfimcp", "carLitos124");
+            //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = new Persona { Nombres = "Carlos Emilio", Apellidos = "Zamora Chinchipe", Identificacion = "0904475969", Telefono = "0991193877", Rol ="Estudiante", Unidad="FIEC",CorreoAlterno="carlosemi123515@hotmail.com"}, Username = "carzamch"});
+            //var respuesta = _activeDirectoryService.ResetPassword("sugfimcp", "carLitos124");
             Debug.WriteLine("Se creo el usuario: "+ respuesta);
             return Ok("Contraseña cambiada exitosamente");
         }
@@ -160,9 +178,10 @@ namespace kairosApp.Controllers
         
         [HttpPost]
         [Route("verificaremail")]
-        public async Task<IActionResult> verifyEmail ( [FromBody] PersonCredentials credentials)
+        public async Task<IActionResult> verifyEmail ( [FromBody] PersonResetPasswordCredentials credentials)
         {
             var respuesta = _cuentaUsuarioService.VerifyEmail(credentials);
+            //var respuestaAD = _activeDirectoryService.verifyUsername();
             if (!respuesta)
             {
                 return BadRequest(new ErrorResource { ErrorMessage = "Correo alterno incorrecto."});

@@ -100,7 +100,7 @@ namespace kairosApp.Services
             return aliasExistente;
         }
 
-        public bool VerifyEmail(PersonCredentials credentials)
+        public bool VerifyEmail(PersonResetPasswordCredentials credentials)
         {
             var usuario = _context.CuentaUsuarios.FirstOrDefault(p => p.PersonaId == credentials.PersonaId);
             if (usuario == null) { return false; }
