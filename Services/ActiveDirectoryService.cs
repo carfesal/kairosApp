@@ -209,9 +209,9 @@ namespace kairosApp.Services
             user.Save();
             return true;*/
 
-            DirectoryEntry domainEntry = new DirectoryEntry("LDAP://192.168.253.3:636/CN=sugfimcp,OU=Users,OU=FIMCP,DC=espol,DC=edu,DC=e", "csiusrpw", "T3st*12$");
+            DirectoryEntry domainEntry = new DirectoryEntry("LDAP://192.168.253.3:636/CN=sugfimcp,OU=Users,OU=FIMCP,DC=espol,DC=edu,DC=ec", "csiusrpw", "T3st*12$");
             DirectorySearcher dirSearcher = new DirectorySearcher(domainEntry);
-            domainEntry.Invoke("SetPassword", new object[] { "carlitos" });
+            domainEntry.Invoke("SetPassword", new object[] { "carLitosd124" });
             domainEntry.Properties["LockOutTime"].Value = 0; //unlock account
             domainEntry.CommitChanges();
             domainEntry.Close();
