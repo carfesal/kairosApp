@@ -118,6 +118,7 @@ namespace kairosApp.Services
                 Debug.WriteLine(sr.GetPropertyValue("physicalDeliveryOfficeName"));
                 Debug.WriteLine(sr.GetPropertyValue("telephoneNumber"));
                 Debug.WriteLine(sr.GetPropertyValue("employeeid"));
+                Debug.WriteLine(sr.GetPropertyValue("title"));
             }
         }
 
@@ -132,7 +133,9 @@ namespace kairosApp.Services
 
             // Email Address
             ds.PropertiesToLoad.Add("mail");
-            
+            // Email Address
+            ds.PropertiesToLoad.Add("title");
+
             ds.PropertiesToLoad.Add("physicalDeliveryOfficeName");
             // First Name
             ds.PropertiesToLoad.Add("givenname");
@@ -216,7 +219,7 @@ namespace kairosApp.Services
                         paraCrear.Persona.Telefono = result.GetPropertyValue("telephoneNumber");
                         Debug.WriteLine(result.GetPropertyValue("employeeid"));
                         paraCrear.Persona.Identificacion = result.GetPropertyValue("employeeid");
-                        paraCrear.CuentaUsuario.Alias = result.GetPropertyValue("givenname").Split(" ")[0] + "." + result.GetPropertyValue("sn").Split(" ")[0];
+                        paraCrear.CuentaUsuario.Alias = result.GetPropertyValue("givenname").Split(" ")[0].ToLower() + "." + result.GetPropertyValue("sn").Split(" ")[0].ToLower();
                         return paraCrear;
                         /*string un = "";
                         //Comporbamos las propiedades del usuario

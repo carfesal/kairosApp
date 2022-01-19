@@ -108,6 +108,9 @@ namespace kairosApp.Controllers
                     var user = _context.CuentaUsuarios.FirstOrDefault(x => x.Username == credentials.Username);
                     if (user == null) { return NotFound(new ErrorResource { ErrorMessage = "Usuario no encontrado" }); }
 
+                    ADToDBUser userAD = _activeDirectoryService.Login(credentials.Username, credentials.Password);
+                    if(userAD == null) { return BadRequest(new ErrorResource { ErrorMessage = "Usuario y/o Contraseña inocrrectos" }); }
+
                     var persona = _context.Personas.FirstOrDefault(x => x.Id == user.PersonaId);
                     Debug.WriteLine(persona.Nombres);
                     Token = JwtHelpers.GenTokenkey(new UserTokens()
@@ -120,14 +123,17 @@ namespace kairosApp.Controllers
                 else
                 {
                     ADToDBUser ADUser = _activeDirectoryService.Login(credentials.Username, credentials.Password);
-                    if(ADUser == null)
+                    if(ADUser != null)
                     {
+                        Debug.WriteLine("Entra al proceso de AD");
                         Persona persona = ADUser.Persona;
+                        persona.Rol = "Trabajador";
                         _context.Personas.Add(persona);
                         _context.SaveChanges();
                         CuentaUsuario cu = ADUser.CuentaUsuario;
                         cu.IsActive = true;
                         cu.PersonaId = persona.Id;
+                        _context.CuentaUsuarios.Add(cu);
                         _context.SaveChanges();
                         Token = JwtHelpers.GenTokenkey(new UserTokens()
                         {
@@ -143,7 +149,9 @@ namespace kairosApp.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ErrorResource { ErrorMessage = "Ocurrio un error" });
+                throw ex;
+                Debug.WriteLine(ex.Message);
+                return BadRequest(new ErrorResource { ErrorMessage = "Ocurrio un error: "+ex.Message });
             }
 
         }
@@ -153,12 +161,12 @@ namespace kairosApp.Controllers
         {
             bool info = false;
             //CODIGO DEL ACTIVE DIRECTORY SERVICE
-            //_activeDirectoryService.GetAUser("hcarden");
+            _activeDirectoryService.GetAUser("hcarden");
             //_activeDirectoryService.GetAdditionalUserInfo();
-            var respuesta = _activeDirectoryService.Login("sugfimcp", "carLitos124");
+            //var respuesta = _activeDirectoryService.Login("sugfimcp", "carLitos124");
             //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = new Persona { Nombres = "Carlos Emilio", Apellidos = "Zamora Chinchipe", Identificacion = "0904475969", Telefono = "0991193877", Rol ="Estudiante", Unidad="FIEC",CorreoAlterno="carlosemi123515@hotmail.com"}, Username = "carzamch"});
             //var respuesta = _activeDirectoryService.ResetPassword("sugfimcp", "carLitos124");
-            Debug.WriteLine("Se creo el usuario: "+ respuesta);
+            //Debug.WriteLine("Se creo el usuario: "+ respuesta);
             return Ok("Contraseña cambiada exitosamente");
         }
 
