@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
+using kairosApp.Domain.Persistence.Contexts;
 using kairosApp.Domain.Services;
 using kairosApp.Extensions;
 using kairosApp.Models;
+using kairosApp.Models.Support;
 using kairosApp.Resources;
 using kairosApp.Resources.Support;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace kairosApp.Controllers
@@ -18,11 +21,13 @@ namespace kairosApp.Controllers
         private readonly IPersonaService _personaService;
         private readonly IMapper _mapper;
         private readonly IActiveDirectoryService _activeDirectoryService;
-        public PersonaController(IPersonaService personaService, IMapper mapper, IActiveDirectoryService activeDirectoryService)
+        private readonly AppDbContext _context; 
+        public PersonaController(IPersonaService personaService, IMapper mapper, IActiveDirectoryService activeDirectoryService, AppDbContext context)
         {
             _personaService = personaService;
             _mapper = mapper;
             _activeDirectoryService = activeDirectoryService;
+            _context = context;
         }
 
         [HttpGet]
@@ -79,12 +84,31 @@ namespace kairosApp.Controllers
         }
 
         [HttpGet]
-        [Route("cuenta/{identificacion}")]
+        [Route("cuenta/{identificacion:minlength(10)}")]
         public async Task<IActionResult> GetPersonWithAccount(string identificacion)
         {
-            //ACCION A LA OTRA BASE DE DATOS p ACTIVE DIRECTORY
+            //ACCION A LA OTRA BASE DE DATOS o ACTIVE DIRECTORY
             var persona = _personaService.GetPersonWithAccountByCedula(identificacion);
-            if (persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula." }); }
+            if (persona == null) 
+            {
+                ADToDBUser adUser = _activeDirectoryService.FindUserByIdentification(identificacion);
+                if(adUser == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula." }); }
+                if(adUser.Persona == null) { return NotFound(new ErrorResource { ErrorMessage = "No se encontro persona con esa cedula." }); }
+                
+                Debug.WriteLine("Entra al proceso de AD");
+                //Se guarda la persona del active directory en la base
+                Persona person = adUser.Persona;
+                _context.Personas.Add(person);
+                _context.SaveChanges();
+
+                //Se guarda la CuentaUsuario en la base
+                CuentaUsuario cu = adUser.CuentaUsuario;
+                cu.IsActive = true;
+                cu.PersonaId = person.Id;
+                _context.CuentaUsuarios.Add(cu);
+                _context.SaveChanges();
+                return Ok(new PersonaConCuentaResource { Success = true , Persona = person});
+            }
             return Ok(persona);
             
         }

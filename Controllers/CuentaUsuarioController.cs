@@ -127,7 +127,6 @@ namespace kairosApp.Controllers
                     {
                         Debug.WriteLine("Entra al proceso de AD");
                         Persona persona = ADUser.Persona;
-                        persona.Rol = "Trabajador";
                         _context.Personas.Add(persona);
                         _context.SaveChanges();
                         CuentaUsuario cu = ADUser.CuentaUsuario;
@@ -143,69 +142,94 @@ namespace kairosApp.Controllers
                         }, _jwtSettings);
                         
                     }
-                    
+                    else
+                        return NotFound(new ErrorResource { ErrorMessage = "Usuario no encontrado" });
+
                 }
                 return Ok(Token);
             }
             catch (Exception ex)
             {
-                throw ex;
                 Debug.WriteLine(ex.Message);
                 return BadRequest(new ErrorResource { ErrorMessage = "Ocurrio un error: "+ex.Message });
             }
 
         }
         [HttpPost]
-        [Route("change")]
-        public async Task<IActionResult> ChangePassword([FromBody] UserCredentials credentials)
+        [Route("pruebasEndpoints")]
+        public async Task<IActionResult> pruebas([FromBody] UserCredentials credentials)
         {
             bool info = false;
             //CODIGO DEL ACTIVE DIRECTORY SERVICE
-            _activeDirectoryService.GetAUser("hcarden");
+            //_activeDirectoryService.GetAUser("hcarden");
+            _activeDirectoryService.GetAdditionalUserInfo();
+            //var respuesta = _activeDirectoryService.Login("sugfimcp", "T3st*12$");
+            //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = new Persona { Nombres = "Carlos Emilio", Apellidos = "Zamora Chinchipe", Identificacion = "0904475969", Telefono = "0991193877", Rol ="Estudiante", Unidad="FIEC",CorreoAlterno="carlosemi123515@hotmail.com"}, Username = "carzamch"});
+            //var respuesta = _activeDirectoryService.ResetPassword("sugfimcp", "T3st*12$");
+            //Debug.WriteLine("Se creo el usuario: "+ respuesta);
+            return Ok("Contraseña cambiada exitosamente");
+
+        }
+
+        [HttpPost]
+        [Route("change")]
+        public async Task<IActionResult> ChangePassword([FromBody] UserCredentials credentials)
+        {
+            var verifyUser = _activeDirectoryService.GetAUser(credentials.Username);
+            if(verifyUser == "Encontrado")
+            {
+                //Contra de prueba= Carlitos123
+                var cambioContra = _activeDirectoryService.ResetPassword(credentials.Username, credentials.Password);
+                if (cambioContra)
+                {
+                    return Ok(new ResponseResource { Success = true, Message = "Contraseña cambia exitosamente" });
+                }
+                return BadRequest(new ErrorResource { ErrorMessage = "Ocurrio un error al cambiar la contraseña." });
+            }
+            return Ok(new ResponseResource { Success = false, Message = "Usuario no encontrado en AD" });
+            //CODIGO DEL ACTIVE DIRECTORY SERVICE
+            //_activeDirectoryService.GetAUser("hcarden");
             //_activeDirectoryService.GetAdditionalUserInfo();
+            //_activeDirectoryService.FindUserByIdentification("1306259894");
             //var respuesta = _activeDirectoryService.Login("sugfimcp", "carLitos124");
             //var respuesta = _activeDirectoryService.CreateUser(new ADCreateUser { Persona = new Persona { Nombres = "Carlos Emilio", Apellidos = "Zamora Chinchipe", Identificacion = "0904475969", Telefono = "0991193877", Rol ="Estudiante", Unidad="FIEC",CorreoAlterno="carlosemi123515@hotmail.com"}, Username = "carzamch"});
             //var respuesta = _activeDirectoryService.ResetPassword("sugfimcp", "carLitos124");
             //Debug.WriteLine("Se creo el usuario: "+ respuesta);
-            return Ok("Contraseña cambiada exitosamente");
+            
         }
 
-        [HttpPost]
-        [Route("reset")]
-        public async Task<IActionResult> ResetPassword([FromBody] UserCredentials credentials)
-        {
-            bool info = false;
-            //CODIGO DEL ACTIVE DIRECTORY SERVICE
-
-            if (info)
-            {
-                return NotFound("Credenciales Erroneas.");
-            }
-            return Ok("Contraseña cambiada exitosamente");
-        }
         
         [HttpPost]
         [Route("verificaremail")]
-        public async Task<IActionResult> verifyEmail ( [FromBody] PersonResetPasswordCredentials credentials)
+        public async Task<IActionResult> ResetPassword ( [FromBody] PersonResetPasswordCredentials credentials)
         {
             var respuesta = _cuentaUsuarioService.VerifyEmail(credentials);
             //var respuestaAD = _activeDirectoryService.verifyUsername();
-            if (!respuesta)
+            if (respuesta)
             {
-                return BadRequest(new ErrorResource { ErrorMessage = "Correo alterno incorrecto."});
+                try
+                {
+                    var newPassWord = _cuentaUsuarioService.CreateNewPassword();
+                    var respuestaAD = _activeDirectoryService.ResetPassword(credentials.Username, newPassWord);
+                    if (respuestaAD)
+                    {
+                        //Se envia mensaje al correo
+                        var message = new Message(new string[] { credentials.Correo }, "Cambio de contraseña", "La nueva contraseña para su cuenta es: " + newPassWord);
+                        //_emailSender.SendEmail(message);
+                        return Ok(new ResponseResource { Success = true, Message = "Contraseña reseteada con exito." });
+                    }
+                    return NotFound(new ErrorResource { ErrorMessage = "No se ha encontrado al usuario" });
+                    
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new ErrorResource { ErrorMessage = "Ha ocurrido un problema: " + ex.Message });
+                }
+                
             }
-            try
-            {
-                var newPassWord = _cuentaUsuarioService.CreateNewPassword();
-                var message = new Message(new string[] { credentials.Correo }, "Cambio de contraseña", "La nueva contraseña para su cuenta es: " + newPassWord);
-                _emailSender.SendEmail(message);
-                return Ok(new ResponseResource { Success = true, Message = "Contraseña reseteada con exito."});
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResource { ErrorMessage = "Ha ocurrido un problema: " +ex.Message });
-            }
-            
+            return BadRequest(new ErrorResource { ErrorMessage = "Correo alterno incorrecto." });
+
+
 
         }
         [HttpGet]

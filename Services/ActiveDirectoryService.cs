@@ -54,6 +54,7 @@ namespace kairosApp.Services
             ds.PropertiesToLoad.Add("distinguishedName");
 
             ds.PropertiesToLoad.Add("physicalDeliveryOfficeName");
+            ds.PropertiesToLoad.Add("description");
 
             ds.Filter = "(&(objectCategory=User)(objectClass=person))";
 
@@ -69,6 +70,9 @@ namespace kairosApp.Services
 
                 if (sr.Properties["name"].Count > 0)
                     Debug.WriteLine("Imprimiendo propiedad name: " + sr.Properties["name"][0].ToString());
+
+                if (sr.Properties["description"].Count > 0)
+                    Debug.WriteLine("Imprimiendo propiedad description: " + sr.Properties["description"][0].ToString());
 
                 // If not filled in, then you will get an error
                 if (sr.Properties["mail"].Count > 0)
@@ -94,7 +98,7 @@ namespace kairosApp.Services
         /**
          *
          */
-        public void GetAUser(string userName)
+        public string GetAUser(string userName)
         {
             DirectorySearcher ds = null;
             DirectoryEntry de = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$");
@@ -104,8 +108,15 @@ namespace kairosApp.Services
             ds = BuildUserSearcher(de);
             // Set the filter to look for a specific user
             ds.Filter = "(&(objectCategory=User)(objectClass=person)(name=" + userName + "))";
-
-            sr = ds.FindOne();
+            try
+            {
+                sr = ds.FindOne();
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine("Ha ocurrido un problema: "+ ex.Message);
+                return "No Encontrado";
+            }
 
             if (sr != null)
             {
@@ -119,7 +130,9 @@ namespace kairosApp.Services
                 Debug.WriteLine(sr.GetPropertyValue("telephoneNumber"));
                 Debug.WriteLine(sr.GetPropertyValue("employeeid"));
                 Debug.WriteLine(sr.GetPropertyValue("title"));
+                return "Encontrado";
             }
+            return "No encontrado";
         }
 
         public DirectorySearcher BuildUserSearcher(DirectoryEntry de)
@@ -130,33 +143,91 @@ namespace kairosApp.Services
 
             // Full Name
             ds.PropertiesToLoad.Add("name");
-
             // Email Address
             ds.PropertiesToLoad.Add("mail");
-            // Email Address
-            ds.PropertiesToLoad.Add("title");
-
+            //physicalDeliveryOfficeName
             ds.PropertiesToLoad.Add("physicalDeliveryOfficeName");
             // First Name
             ds.PropertiesToLoad.Add("givenname");
-
             // Last Name (Surname)
             ds.PropertiesToLoad.Add("sn");
-
             // Login Name
             ds.PropertiesToLoad.Add("userPrincipalName");
-
             // Distinguished Name
             ds.PropertiesToLoad.Add("distinguishedName");
-            
+            // telephoneNumber
             ds.PropertiesToLoad.Add("telephoneNumber");
-            
             // EmployeeID
             ds.PropertiesToLoad.Add("employeeid");
-
+            //Descripcion
+            ds.PropertiesToLoad.Add("description");
             return ds;
         }
+        public ADToDBUser FindUserByIdentification(string identificacion)
+        {
+            DirectorySearcher ds = null;
+            DirectoryEntry de = new DirectoryEntry("LDAP://192.168.253.3", "csiusrpw", "T3st*12$");
+            SearchResult result;
 
+            // Build User Searcher
+            ds = BuildUserSearcher(de);
+            // Set the filter to look for a specific user
+            ds.Filter = "(&(objectCategory=User)(objectClass=person)(employeeid=" + identificacion + "))";
+            try
+            {
+                result = ds.FindOne();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Ocurrio un error: "+ ex.Message);
+                return null;
+            }
+
+            if (result != null)
+            {
+                ADToDBUser paraCrear = new ADToDBUser { CuentaUsuario = new Models.CuentaUsuario(), Persona = new Models.Persona() };
+                //Se agrega el username
+                Debug.WriteLine(result.GetPropertyValue("name"));
+                paraCrear.CuentaUsuario.Username = result.GetPropertyValue("name");
+
+                //Por ahora se agrega el correo espol PD: Se deberia agregar un correo alterno
+                Debug.WriteLine(result.GetPropertyValue("mail"));
+                paraCrear.Persona.CorreoAlterno = result.GetPropertyValue("mail");
+                // Se agregan los nombres
+                Debug.WriteLine(result.GetPropertyValue("givenname"));
+                paraCrear.Persona.Nombres = result.GetPropertyValue("givenname");
+
+                // Se agregan los apellidos
+                Debug.WriteLine(result.GetPropertyValue("sn"));
+                paraCrear.Persona.Apellidos = result.GetPropertyValue("sn");
+
+                Debug.WriteLine(result.GetPropertyValue("userPrincipalName"));
+                Debug.WriteLine(result.GetPropertyValue("distinguishedName"));
+
+                // Se agrega la Unidad
+                Debug.WriteLine(result.GetPropertyValue("physicalDeliveryOfficeName"));
+                paraCrear.Persona.Unidad = result.GetPropertyValue("physicalDeliveryOfficeName");
+
+                // Se agrega el numero de telefono
+                Debug.WriteLine(result.GetPropertyValue("telephoneNumber"));
+                paraCrear.Persona.Telefono = result.GetPropertyValue("telephoneNumber");
+
+                // Se agrega el numero de identificacion guardado
+                Debug.WriteLine(result.GetPropertyValue("employeeid"));
+                paraCrear.Persona.Identificacion = result.GetPropertyValue("employeeid");
+
+                //Se agregar el rol
+                paraCrear.Persona.Rol = result.GetPropertyValue("description");
+
+                //Se crea y se agrega el alias
+                paraCrear.CuentaUsuario.Alias = result.GetPropertyValue("givenname").Split(" ")[0].ToLower() + "." + result.GetPropertyValue("sn").Split(" ")[0].ToLower();
+                return paraCrear;
+            }
+            else
+            {
+                return new ADToDBUser { Persona = null, CuentaUsuario = null };
+            }
+        }
         public ADToDBUser Login(string userName, string password)
         {
             using (DirectoryEntry entry = new DirectoryEntry("LDAP://192.168.253.3", userName, password))
@@ -183,11 +254,16 @@ namespace kairosApp.Services
                     searcher.PropertiesToLoad.Add("distinguishedName");
 
                     searcher.PropertiesToLoad.Add("telephoneNumber");
+                    
+                    //Descripcion
+                    searcher.PropertiesToLoad.Add("description");
 
                     // EmployeeID
                     searcher.PropertiesToLoad.Add("employeeid");
+
                     //Buscamos por la propiedad SamAccountName
                     searcher.Filter = "(samaccountname=" + userName + ")";
+
                     //Buscamos el usuario con la cuenta indicada
                     SearchResult result = null;
                     try
@@ -202,41 +278,43 @@ namespace kairosApp.Services
 
                     if (result != null)
                     {
-                        ADToDBUser paraCrear = new ADToDBUser { CuentaUsuario = new Models.CuentaUsuario(), Persona = new Models.Persona()};
+                        ADToDBUser paraCrear = new ADToDBUser { CuentaUsuario = new Models.CuentaUsuario(), Persona = new Models.Persona() };
+                        //Se agrega el username
                         Debug.WriteLine(result.GetPropertyValue("name"));
                         paraCrear.CuentaUsuario.Username = result.GetPropertyValue("name");
+
+                        //Por ahora se agrega el correo espol PD: Se deberia agregar un correo alterno
                         Debug.WriteLine(result.GetPropertyValue("mail"));
                         paraCrear.Persona.CorreoAlterno = result.GetPropertyValue("mail");
+                        // Se agregan los nombres
                         Debug.WriteLine(result.GetPropertyValue("givenname"));
                         paraCrear.Persona.Nombres = result.GetPropertyValue("givenname");
+
+                        // Se agregan los apellidos
                         Debug.WriteLine(result.GetPropertyValue("sn"));
                         paraCrear.Persona.Apellidos = result.GetPropertyValue("sn");
+
                         Debug.WriteLine(result.GetPropertyValue("userPrincipalName"));
                         Debug.WriteLine(result.GetPropertyValue("distinguishedName"));
+
+                        // Se agrega la Unidad
                         Debug.WriteLine(result.GetPropertyValue("physicalDeliveryOfficeName"));
                         paraCrear.Persona.Unidad = result.GetPropertyValue("physicalDeliveryOfficeName");
+
+                        // Se agrega el numero de telefono
                         Debug.WriteLine(result.GetPropertyValue("telephoneNumber"));
                         paraCrear.Persona.Telefono = result.GetPropertyValue("telephoneNumber");
+
+                        // Se agrega el numero de identificacion guardado
                         Debug.WriteLine(result.GetPropertyValue("employeeid"));
                         paraCrear.Persona.Identificacion = result.GetPropertyValue("employeeid");
+
+                        //Se agregar el rol
+                        paraCrear.Persona.Rol = result.GetPropertyValue("description");
+
+                        //Se crea y se agrega el alias
                         paraCrear.CuentaUsuario.Alias = result.GetPropertyValue("givenname").Split(" ")[0].ToLower() + "." + result.GetPropertyValue("sn").Split(" ")[0].ToLower();
                         return paraCrear;
-                        /*string un = "";
-                        //Comporbamos las propiedades del usuario
-                        Debug.WriteLine(result.ToString);
-                        ResultPropertyCollection fields = result.Properties;
-                        ADToDBUser paraCrear = new ADToDBUser();
-                        foreach (String ldapField in fields.PropertyNames)
-                        {
-                            Debug.WriteLine("Propiedad Active Directory: " + ldapField);
-                            foreach (Object myCollection in fields[ldapField])
-                            {
-                                Debug.WriteLine("Valor de la propiedad:" + myCollection.ToString());
-                                if (ldapField == "sn")
-                                    un = myCollection.ToString().ToLower();
-                            }
-                        }
-                        return un;*/
 
                     }
                     else
@@ -273,6 +351,7 @@ namespace kairosApp.Services
             }
             catch (Exception e)
             {
+                throw e;
                 Debug.WriteLine("Ocurrio un error: " + e.Message);
                 return false;
             }
